@@ -1,3 +1,8 @@
+IMPORTANT: This is not the official code, this fork was made as a way to make easier the modifications and sending patches to the original author, this is a very temporal repository to ease these tasks, do not use it, use the original one by jeffdameth!
+
+Thank you
+
+------------------------------------------------------------
 
 Ecomorph is a compositing manager for e17. It consists of the ecomorph
 module for e17 and ecomp. ecomp is based on compiz 0.6.
