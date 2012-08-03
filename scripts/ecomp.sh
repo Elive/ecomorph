@@ -77,6 +77,17 @@ verbose()
 	fi
 }
 
+# Check if we have glxinfo tool available
+check_glxinfo()
+{
+   verbose "Checking for Glxinfo tool: "
+   if ! glxinfo 1>/dev/null 2>/dev/null ; then
+        verbose "Not present. Please install it first (package mesa-utils in debian)\n"
+       return 1;
+   fi
+
+}
+
 # Check if we run with the Software Rasterizer, this happens e.g.
 # when a second screen session is opened via f-u-a on intel
 check_software_rasterizer()
@@ -305,7 +316,7 @@ fi
 #fi
 # check if we have the required bits to run compiz and if not, 
 # fallback
-if ! check_tfp || ! check_npot_texture || ! check_composite || ! check_texture_size; then
+if ! check_glxinfo || ! check_tfp || ! check_npot_texture || ! check_composite || ! check_texture_size; then
     exit 1;
 fi
 
