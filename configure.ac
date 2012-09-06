@@ -12,6 +12,7 @@ AC_ISC_POSIX
 
 AM_INIT_AUTOMAKE(1.8)
 AM_CONFIG_HEADER(config.h)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -33,7 +34,7 @@ AC_SUBST(MODULE_ARCH)
 AC_DEFINE_UNQUOTED(MODULE_ARCH, "$MODULE_ARCH", "Module architecture")
 
 # Find edje_cc
-PKG_CHECK_MODULES(EDJE, [edje >= 0.5.0])
+PKG_CHECK_MODULES(EDJE, [edje >= 1.7.99])
 AC_ARG_WITH(edje-cc,
   AC_HELP_STRING([--with-edje-cc=PATH], [specify a specific path to edje_cc]),
   [
