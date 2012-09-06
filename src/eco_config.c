@@ -410,23 +410,23 @@ eco_attach_widget(Evas_Object *sub, void apply_func(E_Config_Dialog_Data *cfdata
 
 
 ////////////////////////////////////////////////////////////////////////////////
-static int
+static Eina_Bool
 _eco_check_ecomorph(void *data)
 {
    E_Config_Dialog_Data *cfdata = data;
 
    if (system("pidof ecomorph"))
    {
-      e_widget_disabled_set(cfdata->o_stop, 1);
-      e_widget_disabled_set(cfdata->o_start, 0);
+      e_widget_disabled_set(cfdata->o_stop, EINA_TRUE);
+      e_widget_disabled_set(cfdata->o_start, EINA_FALSE);
    }
    else
    {
-      e_widget_disabled_set(cfdata->o_stop, 0);
-      e_widget_disabled_set(cfdata->o_start, 1);
+      e_widget_disabled_set(cfdata->o_stop, EINA_FALSE);
+      e_widget_disabled_set(cfdata->o_start, EINA_TRUE);
    }
 
-   return 1; //repeat the timer
+   return EINA_TRUE; //repeat the timer
 }
 
 static void

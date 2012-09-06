@@ -251,13 +251,13 @@ _eco_cb_mouse_wheel(void *data, int type, void *event)
    return 1;
 }
 
-static int
+static Eina_Bool
 _edge_enable_timer_cb(void *data)
 {
   e_zone_edge_enable();
   
   //e_zone_flip_win_restore();
-   return 0;
+   return EINA_FALSE;
 }
 
 static int

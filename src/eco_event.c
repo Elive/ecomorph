@@ -63,7 +63,7 @@ static int _eco_border_changes_state = 0;
 static int _eco_border_changes_type = 0;
 static int _eco_border_update_state = 0;
 
-static int
+static Eina_Bool
 _cb_after_restart(void *data)
 {
   _eco_message_root_send
@@ -78,7 +78,7 @@ _cb_after_restart(void *data)
 			0, bd->desk->x, bd->desk->y, 0);
     }
   
-  return 0;
+  return EINA_FALSE;
 }
 
 
@@ -565,7 +565,7 @@ _eco_cb_border_desk_set(void *data, int ev_type, void *event)
 
 /* hacks for this issue http://lists.freedesktop.org/archives/xorg/2008-August/038022.html */
 /* delay mapping until damage arrives + some delay for slow drawers */
-static int
+static Eina_Bool
 _eco_borderdamage_wait_time_out(void *data)
 {
   E_Border *bd;
@@ -585,7 +585,7 @@ _eco_borderdamage_wait_time_out(void *data)
       bdd->damage_handler = NULL;
     }
    
-  return 0;
+  return EINA_FALSE;
 }
 
 static int 
