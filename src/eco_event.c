@@ -22,15 +22,15 @@ struct _Eco_Icon
   unsigned int *icon_ptr;
 };
 
-static int  _eco_cb_client_message(void *data, int ev_type, void *ev);
-static int  _eco_cb_window_configure(void *data, int ev_type, void *ev);
-static int  _eco_cb_zone_desk_count_set(void *data, int ev_type, void *ev);
-static int  _eco_cb_border_icon_change(void *data, int ev_type, void *ev);
-static int  _eco_cb_border_remove(void *data, int ev_type, void *ev);
-static int  _eco_cb_border_show(void *data, int ev_type, void *ev);
-static int  _eco_cb_border_desk_set(void *data, int ev_type, void *ev);
-static int  _eco_cb_border_focus(void *data, int ev_type, void *ev);
-static int  _eco_cb_desk_show(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_client_message(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_window_configure(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_zone_desk_count_set(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_border_icon_change(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_border_remove(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_border_show(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_border_desk_set(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_border_focus(void *data, int ev_type, void *ev);
+static Eina_Bool  _eco_cb_desk_show(void *data, int ev_type, void *ev);
 
 static void _eco_border_cb_hook_new_border(void *data, void *bd);
 static void _eco_border_cb_hook_pre_new_border(void *data, void *bd);
@@ -182,7 +182,7 @@ _eco_message_root_send(Ecore_X_Atom atom, long l1, long l2, long l3, long l4, lo
 }
 
 
-static int
+static Eina_Bool
 _eco_cb_client_message(void *data, int ev_type, void *ev)
 {
    Ecore_X_Event_Client_Message *e = ev;
@@ -346,7 +346,7 @@ _eco_zone_desk_count_set(E_Zone *zone)
 }
 
 
-static int
+static Eina_Bool
 _eco_cb_zone_desk_count_set(void *data, int ev_type, void *ev)
 {
    E_Event_Zone_Desk_Count_Set *e = ev;
@@ -364,7 +364,7 @@ _eco_desk_event_desk_after_show_free(void *data, void *event)
   free(ev);
 }
 
-static int
+static Eina_Bool
 _eco_cb_desk_show(void *data, int ev_type, void *event)
 {
   E_Event_Desk_Show *ev;
@@ -458,7 +458,7 @@ _eco_cb_desk_show(void *data, int ev_type, void *event)
 
 /************************************************************************/
 
-static int
+static Eina_Bool
 _eco_cb_border_focus(void *data, int ev_type, void *event)
 {
   E_Event_Border_Desk_Set *ev = event;
@@ -534,7 +534,7 @@ _eco_border_cb_hook_set_desk(void *data, void *border)
   ecore_x_netwm_desktop_set(bd->win, bd->desk->x + (bd->zone->desk_x_count * bd->desk->y));
 }
 
-static int
+static Eina_Bool
 _eco_cb_border_desk_set(void *data, int ev_type, void *event)
 {
   E_Event_Border_Desk_Set *ev = event;
@@ -588,7 +588,7 @@ _eco_borderdamage_wait_time_out(void *data)
   return EINA_FALSE;
 }
 
-static int 
+static Eina_Bool 
 _eco_bordercb_damage_notify(void *data, int ev_type, void *ev)
 {
   Ecore_X_Event_Damage *e;
@@ -657,7 +657,7 @@ _eco_borderwait_damage(E_Border *bd)
   bdd->damage_rect.height = 0;   
 }
 
-static int
+static Eina_Bool
 _eco_cb_border_remove(void *data, int ev_type, void *ev)
 {
   E_Event_Border_Remove *e = ev;
@@ -681,7 +681,7 @@ _eco_cb_border_remove(void *data, int ev_type, void *ev)
   return 1;
 }
 
-static int
+static Eina_Bool
 _eco_cb_border_show(void *data, int ev_type, void *ev)
 {
   E_Event_Border_Show *e = ev;
@@ -1039,8 +1039,9 @@ _eco_border_icon_add(E_Border *bd, Evas *evas, int size)
    evas_object_del(o);
 }
 
-static 
-int _eco_cb_border_icon_change(void *data, int ev_type, void *ev)
+static Eina_Bool
+_eco_cb_border_icon_change(void *data, int ev_type, void *ev)
+
 {
    E_Event_Border_Icon_Change *e = ev;
 

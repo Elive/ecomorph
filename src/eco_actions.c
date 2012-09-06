@@ -57,12 +57,12 @@ static void _eco_cb_mouse_wheel_action(E_Object *obj, const char *params, Ecore_
 static void _eco_cb_action(E_Object *obj, const char *params, int modifiers);
 
 static void _eco_modifiers_set(int mod);
-static int  _eco_cb_key_down(void *data, int type, void *event);
-static int  _eco_cb_key_up(void *data, int type, void *event);
-static int  _eco_cb_mouse_wheel(void *data, int type, void *event);
-static int  _eco_cb_mouse_move(void *data, int type, void *event);
-static int  _eco_cb_mouse_down(void *data, int type, void *event);
-static int  _eco_cb_mouse_up(void *data, int type, void *event);
+static Eina_Bool _eco_cb_key_down(void *data, int type, void *event);
+static Eina_Bool _eco_cb_key_up(void *data, int type, void *event);
+static Eina_Bool _eco_cb_mouse_wheel(void *data, int type, void *event);
+static Eina_Bool _eco_cb_mouse_move(void *data, int type, void *event);
+static Eina_Bool _eco_cb_mouse_down(void *data, int type, void *event);
+static Eina_Bool _eco_cb_mouse_up(void *data, int type, void *event);
 
 static Eco_Action eco_action;
 static Eina_List *act_handlers = NULL;
@@ -133,7 +133,7 @@ eco_action_terminate(void) /* TODO add arg if message should be send
 /* when a plugin is in active state we filter all key events 
    input_window has grabbed the keybord. so all key events go
    through this function */
-static int
+static Eina_Bool
 _eco_cb_key_down(void *data, int type, void *event)
 {
    Ecore_Event_Key *ev = event;
@@ -151,7 +151,7 @@ _eco_cb_key_down(void *data, int type, void *event)
 	     eco_action_terminate();
 	     eco_action.option = ECO_ACT_OPT_TERMINATE_CANCEL;
 	     _eco_plugin_message_send();
-	     return 1;
+	     return EINA_TRUE;
 	  }
      }
    else
@@ -195,7 +195,7 @@ _eco_cb_key_down(void *data, int type, void *event)
 				 eco_action.option2 = option2;
 				 _eco_plugin_message_send();
 			      }
-			    return 1;
+			    return EINA_TRUE;
 			 }
 		    }
 	       }
@@ -231,10 +231,10 @@ _eco_cb_key_down(void *data, int type, void *event)
 	eco_action_terminate();
 	_eco_plugin_message_send();
      }
-   return 1;
+   return EINA_TRUE;
 }
 
-static int
+static Eina_Bool
 _eco_cb_mouse_wheel(void *data, int type, void *event)
 {
    Ecore_Event_Mouse_Wheel *ev = event;
@@ -248,7 +248,7 @@ _eco_cb_mouse_wheel(void *data, int type, void *event)
 
    _eco_plugin_message_send();
 
-   return 1;
+   return EINA_TRUE;
 }
 
 static Eina_Bool
@@ -260,7 +260,7 @@ _edge_enable_timer_cb(void *data)
    return EINA_FALSE;
 }
 
-static int
+static Eina_Bool
 _eco_cb_mouse_move(void *data, int type, void *event)
 {
    Ecore_Event_Mouse_Move *ev = event;
@@ -316,7 +316,7 @@ _eco_cb_mouse_move(void *data, int type, void *event)
 	     _eco_plugin_message_send();
 	     /* XXX */
 	     ecore_timer_add(0.3, _edge_enable_timer_cb, NULL);
-	     return 1;
+	     return EINA_TRUE;
 	  }
      }
    
@@ -327,10 +327,10 @@ _eco_cb_mouse_move(void *data, int type, void *event)
    
    _eco_plugin_message_send();
    
-   return 1;
+   return EINA_TRUE;
 }
 
-static int
+static Eina_Bool
 _eco_cb_mouse_down(void *data, int type, void *event)
 {
    Ecore_Event_Mouse_Button *ev = event;
@@ -352,10 +352,10 @@ _eco_cb_mouse_down(void *data, int type, void *event)
 	_eco_plugin_message_send();
      }
    
-   return 1;
+   return EINA_TRUE;
 }
 
-static int
+static Eina_Bool
 _eco_cb_mouse_up(void *data, int type, void *event)
 {
    Ecore_Event_Mouse_Button *ev = event;
@@ -372,15 +372,15 @@ _eco_cb_mouse_up(void *data, int type, void *event)
 	_eco_plugin_message_send();
      }
    
-   return 1;
+   return EINA_TRUE;
 }
 
-static int
+static Eina_Bool
 _eco_cb_key_up(void *data, int type, void *event)
 {
    Ecore_Event_Key *ev = event;
    
-   if (!(act_handlers)) return 1;
+   if (!(act_handlers)) return EINA_TRUE;
 
    if (hold_mod && !eco_action.toggle)
    {
@@ -407,7 +407,7 @@ _eco_cb_key_up(void *data, int type, void *event)
          _eco_plugin_message_send();
       }
    }
-  return 1;
+  return EINA_TRUE;
 }
 
 static void
