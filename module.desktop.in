@@ -4,4 +4,4 @@ Name=Ecomorph
 Icon=e-module-ecomorph
 Comment=Ecomorph Module
 #Several different types available here. NEED TO DOC THESE.
-X-Enlightenment-ModuleType=system
+X-Enlightenment-ModuleType=look
