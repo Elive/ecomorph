@@ -51,10 +51,17 @@
   
 #define MOD(a,b) ((a) < 0 ? ((b) - ((-(a) - 1) % (b))) - 1 : (a) % (b))
 
-
 #include "eco_config.h"
 #include "eco_actions.h"
 #include "eco_event.h"
+
+typedef struct _Config Config;
+struct _Config 
+{
+   int dropshadow;
+   int compscale;
+   int composite;
+};
 
 EAPI extern E_Module_Api e_modapi;
 
