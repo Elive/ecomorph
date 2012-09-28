@@ -593,7 +593,9 @@ e_int_config_eco(E_Container *con, const char *params)
                              "E", "appearance/eco",
                              edje_file, 0, v, NULL);
 
-   e_win_resize(cfd->dia->win, 820, 720);
+   e_win_resize(cfd->dia->win, 850, 720);
+   e_dialog_resizable_set(cfd->dia, 1);
+   
    return cfd;
 }
 
@@ -742,7 +744,8 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    
    e_widget_list_object_append(o, cfdata->o_container, 1, 1, 0.0);
 
-   e_dialog_resizable_set(cfd->dia, 1);
+   //e_dialog_resizable_set(cfd->dia, 1);
+   eco_config_general(cfdata);
    
    //Check if ecomorph is running and run the timer
    _eco_check_ecomorph(cfdata);
