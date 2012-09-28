@@ -121,15 +121,57 @@ eco_event_init(void)
    return 1;
 }
 
+static void 
+eco_event_return_borders_to_e(Eina_List *borders)
+{
+   E_Container *con = e_container_current_get(e_manager_current_get());
+   E_Border *obd, *nbd;
+   Eina_List *l, *ll;
+
+   EINA_LIST_FOREACH(borders, l, obd)
+     {
+        EINA_LIST_FOREACH(e_border_client_list(), ll, nbd)
+          {
+             if((obd->client.netwm.pid <= 0) && (nbd->client.netwm.pid <= 0)) continue;
+
+             if(obd->client.netwm.pid == nbd->client.netwm.pid)
+               {
+                  E_Zone *zone;
+                  E_Desk *desk;
+
+                  if(nbd->iconic) continue;
+
+                  if(!nbd->iconic)
+                    {
+                       e_border_iconify(nbd);
+                       nbd->iconic = 1;
+                    }
+
+                  zone = e_container_zone_number_get(obd->zone->container,
+                                                     obd->zone->num);
+                  desk = e_desk_at_xy_get(zone, obd->desk->x, obd->desk->y);
+
+                  if(nbd->iconic)
+                    e_border_uniconify(nbd);
+
+                  e_border_zone_set(nbd, zone);
+                  e_border_desk_set(nbd, desk);
+               }
+          }
+     }
+}
+
 EAPI int
 eco_event_shutdown(void)
 {
    Ecore_Event_Handler *h;
    E_Border_Hook *hook;
    Eco_Border_Data *bdd;
-   Eina_List *l;
+   Eina_List *l, *clone;
    E_Border *bd;
-   
+
+   clone = eina_list_clone(e_border_client_list());
+
    EINA_LIST_FREE (handlers, h)
      ecore_event_handler_del(h);
    
@@ -164,6 +206,8 @@ eco_event_shutdown(void)
        free(bdd);
      }
 
+   eco_event_return_borders_to_e(clone);
+   eina_list_free(clone);
    return 1;
 }
 
