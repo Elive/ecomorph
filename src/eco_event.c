@@ -132,9 +132,7 @@ eco_event_return_borders_to_e(Eina_List *borders)
      {
         EINA_LIST_FOREACH(e_border_client_list(), ll, nbd)
           {
-             if((obd->client.netwm.pid <= 0) && (nbd->client.netwm.pid <= 0)) continue;
-
-             if(obd->client.netwm.pid == nbd->client.netwm.pid)
+             if(obd->win == nbd->win)
                {
                   E_Zone *zone;
                   E_Desk *desk;
