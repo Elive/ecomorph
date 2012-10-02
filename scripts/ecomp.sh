@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Compiz Manager wrapper script
-# 
+#
 # Copyright (c) 2007 Kristian Lyngstøl <kristian@bohemians.org>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -25,10 +25,10 @@
 # Much of this code is based on Beryl code, also licensed under the GPL.
 # This script will detect what options we need to pass to compiz to get it
 # started, and start a default plugin and possibly window decorator.
-# 
+#
 
 
-COMPIZ_NAME="ecomorph" # Final name for compiz (compiz.real) 
+COMPIZ_NAME="ecomorph" # Final name for compiz (compiz.real)
 GLXINFO="glxinfo"
 # For Xgl LD_PRELOAD
 #LIBGL_NVIDIA="/usr/lib/nvidia/libGL.so.1.2.xlibmesa"
@@ -46,7 +46,7 @@ XORG_DRIVER_PATH="/usr/lib/xorg/modules/drivers/+"
 # Driver whitelist
 WHITELIST="nvidia intel ati radeon i810 fglrx"
 
-# blacklist based on the pci ids 
+# blacklist based on the pci ids
 # See http://wiki.compiz-fusion.org/Hardware/Blacklist for details
 #T="   1002:5954 1002:5854 1002:5955" # ati rs480
 #T="$T 1002:4153" # ATI Rv350
@@ -73,7 +73,7 @@ VERBOSE="yes"
 verbose()
 {
 	if [ "x$VERBOSE" = "xyes" ]; then
-		printf "$*"
+		printf "$*" 1>&2
 	fi
 }
 
@@ -81,10 +81,13 @@ verbose()
 check_glxinfo()
 {
    verbose "Checking for Glxinfo tool: "
-   if ! glxinfo 1>/dev/null 2>/dev/null ; then
-        verbose "Not present. Please install it first (package mesa-utils in debian)\n"
-       return 1;
+   if ! test -x "/usr/bin/$GLXINFO" ; then
+       if ! glxinfo 1>/dev/null 2>/dev/null ; then
+            verbose "Not present. Please install it first (package mesa-utils in debian)\n"
+           return 1;
+       fi
    fi
+   verbose "present. \n"
 
 }
 
@@ -122,10 +125,10 @@ check_fbconfig()
 {
 	verbose "Checking for FBConfig: "
 	if [ "$INDIRECT" = "yes" ]; then
-		$GLXINFO -i | grep -q GLX.*fbconfig 
+		$GLXINFO -i | grep -q GLX.*fbconfig
 		FB=$?
 	else
-		$GLXINFO | grep -q GLX.*fbconfig 
+		$GLXINFO | grep -q GLX.*fbconfig
 		FB=$?
 	fi
 
@@ -246,7 +249,7 @@ check_texture_size()
 # 	fi
 # 	for DRV in ${WHITELIST}; do
 # 		if egrep -q "Loading ${XORG_DRIVER_PATH}${DRV}_drv\.so" $LOG &&
-# 		   ! egrep -q "Unloading ${XORG_DRIVER_PATH}${DRV}_drv\.so" $LOG; 
+# 		   ! egrep -q "Unloading ${XORG_DRIVER_PATH}${DRV}_drv\.so" $LOG;
 # 		then
 # 			return 0
 # 		fi
@@ -314,7 +317,7 @@ fi
 #if ! running_under_whitelisted_driver || have_blacklisted_pciid; then
 #    exit 1;
 #fi
-# check if we have the required bits to run compiz and if not, 
+# check if we have the required bits to run compiz and if not,
 # fallback
 if ! check_glxinfo || ! check_tfp || ! check_npot_texture || ! check_composite || ! check_texture_size; then
     exit 1;
@@ -339,11 +342,18 @@ fi
 build_env
 build_args
 
+
+# these messages are strictly required, do not remove or change them
+printf "ECOMORPH_OPTIONS: $COMPIZ_OPTIONS\n"
+printf "ECOMORPH_PLUGINS: $COMPIZ_PLUGINS\n"
+
+
 if [ "x$CM_DRY" = "xyes" ]; then
 	verbose "Dry run finished: everything should work with regards to Compiz and 3D.\n"
 	verbose "Execute: ${COMPIZ_NAME} $COMPIZ_OPTIONS "$@" $COMPIZ_PLUGINS \n"
 	exit 0;
 fi
 
-${COMPIZ_NAME} $COMPIZ_OPTIONS "$@" $COMPIZ_PLUGINS
+# that line is for run ecomorph, but we don't use it anymore
+#${COMPIZ_NAME} $COMPIZ_OPTIONS "$@" $COMPIZ_PLUGINS
 
