@@ -650,11 +650,10 @@ _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
        snprintf(buf, 256, "%s %s", argv, opt->stringValue);
        argv = strdup(buf);
    }
-   DBG(argv);
    config->base_plugins = eina_stringshare_add(argv);
+   DBG("base_plugin:%s", config->base_plugins);
 
    e_config_save_queue();
-
    return 1;
 }
 
