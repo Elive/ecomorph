@@ -1,4 +1,4 @@
-#include "e_mod_main.h"
+#include "eco_config.h"
 
 /* #define NUM_PLUGINS 23 */
 
@@ -140,7 +140,7 @@ eco_config_general(void *data)
   ECO_PAGE_TABLE_END;
    
   Eco_Option *plugin;
-  opt_active_plugins = eco_config_option_get(cfg_display, "active_plugins");   
+  opt_active_plugins = eco_config_option_get(config->cfg_display, "active_plugins");   
 
   for (i = 0; i < NUM_BASE;     i++) active_base[i] = 0;
   for (i = 0; i < NUM_VIEWPORT; i++) active_viewport[i] = 0;

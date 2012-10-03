@@ -1,12 +1,16 @@
 #include "e_mod_main.h"
+#include "eco_config.h"
 #include <X11/Xlib.h>
 
 #define DROPSHADOW "dropshadow"
 #define COMPSCALE "scale"
 #define COMPOSITE "comp"
 
+int ecomorph_log;
+
 static void  _e_mod_run_cb(void *data, E_Menu *m, E_Menu_Item *mi);
 static void  _e_mod_menu_add(void *data, E_Menu *m);
+static Eina_Bool _e_mod_event_del_handler(void *data, int type, void *event);
 
 Ecore_X_Atom ECOMORPH_ATOM_MANAGED = 0;
 Ecore_X_Atom ECOMORPH_ATOM_MOVE_RESIZE = 0;
@@ -15,7 +19,6 @@ Ecore_X_Atom ECOMORPH_ATOM_PLUGIN = 0;
 static E_Module *conf_module = NULL;
 static E_Int_Menu_Augmentation *maug = NULL;
 
-Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 /* Eet_Data_Descriptor_Class eddc_option;
  * Eet_Data_Descriptor_Class eddc_group; */
 
@@ -36,7 +39,6 @@ eet_eina_hash_add(Eina_Hash *hash, const char *key, const void *data)
   return hash;
 }
 
-static int active = 0;
 static E_Config_DD *config_edd = NULL;
 Config *config;
 
@@ -47,13 +49,9 @@ static int config_module_enable_get(const char *name)
 
    m = e_module_find(name);
    if((m) && (e_module_enabled_get(m)))
-     {
-        return 1;
-     }
-   else if (!m)
-     {
-        return 0;
-     }
+      return 1;
+
+   return 0;
 }
 
 static void config_module_unload_set(const char *name)
@@ -88,6 +86,7 @@ _config_new(void)
    config->dropshadow = config_module_enable_get(DROPSHADOW);
    config->compscale = config_module_enable_get(COMPOSITE);
    config->composite = config_module_enable_get(COMPSCALE);
+   config->base_plugins = eina_stringshare_add("ini inotify");
    e_config_save_queue();
 }
 
@@ -95,7 +94,11 @@ EAPI void *
 e_modapi_init(E_Module *m)
 {
    char buf[PATH_MAX];
-   
+   const char *log_name = eina_stringshare_add("MOD:ECO");
+
+   ecomorph_log = eina_log_domain_register(log_name,EINA_COLOR_CYAN);
+   eina_log_domain_level_set(log_name, EINA_LOG_LEVEL_DBG);
+
    /* Location of message catalogs for localization */
    snprintf(buf, sizeof(buf), "%s/locale", e_module_dir_get(m));
    bindtextdomain(PACKAGE, buf);
@@ -103,7 +106,6 @@ e_modapi_init(E_Module *m)
 
    /* Location of theme to load for this module */
    snprintf(buf, sizeof(buf), "%s/e-module-ecomorph.edj", e_module_dir_get(m));
-   edje_file = eina_stringshare_add(buf);
 
    e_configure_registry_category_add("appearance", 10, _("Look"),
                                      NULL, "enlightenment/appearance");
@@ -117,6 +119,7 @@ e_modapi_init(E_Module *m)
    E_CONFIG_VAL(D, T, dropshadow, INT);
    E_CONFIG_VAL(D, T, compscale, INT);
    E_CONFIG_VAL(D, T, composite, INT);
+   E_CONFIG_VAL(D, T, base_plugins, STR);
 
    config = e_config_domain_load("module.ecomorph", config_edd);
 
@@ -139,16 +142,18 @@ e_modapi_init(E_Module *m)
    if(config_module_enable_get(COMPSCALE) == TRUE)
      config_module_unload_set(COMPSCALE);
 
+   config->edje_file = eina_stringshare_add(buf);
+
    maug = e_int_menus_menu_augmentation_add("config/1", _e_mod_menu_add, NULL, NULL, NULL);
     
-   eco_edd_group = eet_data_descriptor_new
+   config->eco_edd_group = eet_data_descriptor_new
      ("group", sizeof(Eco_Group),
       NULL, NULL, NULL, NULL,
       (void  (*) (void *, int (*) (void *, const char *, void *, void *), void *))eina_hash_foreach,
       (void *(*) (void *, const char *, void *))eet_eina_hash_add,
       (void  (*) (void *))eina_hash_free);
    
-   eco_edd_option = eet_data_descriptor_new
+   config->eco_edd_option = eet_data_descriptor_new
      ("option", sizeof(Eco_Option),
       (void *(*) (void *))eina_list_next,
       (void *(*) (void *, void *)) eina_list_append,
@@ -161,13 +166,13 @@ e_modapi_init(E_Module *m)
     * eco_edd_option = eet_data_descriptor_stream_new(&eddc_option);
     * eco_edd_group =  eet_data_descriptor_stream_new(&eddc_group); */
    
-   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "type",	 type,	      EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "int",	 intValue,    EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "double",	 doubleValue, EET_T_DOUBLE);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "string",	 stringValue, EET_T_STRING);
-   EET_DATA_DESCRIPTOR_ADD_LIST (eco_edd_option, Eco_Option, "list",	 listValue,   eco_edd_option);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "type",	 type,	      EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "int",	 intValue,    EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "double",	 doubleValue, EET_T_DOUBLE);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "string",	 stringValue, EET_T_STRING);
+   EET_DATA_DESCRIPTOR_ADD_LIST (config->eco_edd_option, Eco_Option, "list",	 listValue,   config->eco_edd_option);
 
-   EET_DATA_DESCRIPTOR_ADD_HASH (eco_edd_group,  Eco_Group,  "options", data, eco_edd_option);
+   EET_DATA_DESCRIPTOR_ADD_HASH (config->eco_edd_group,  Eco_Group,  "options", data, config->eco_edd_option);
 
    ECOMORPH_ATOM_MANAGED = ecore_x_atom_get("__ECOMORPH_WINDOW_MANAGED");
    ECOMORPH_ATOM_PLUGIN  = ecore_x_atom_get("__ECOMORPH_PLUGIN");
@@ -176,20 +181,20 @@ e_modapi_init(E_Module *m)
      (e_container_current_get(e_manager_current_get())->bg_win,
       ECORE_X_WINDOW_TYPE_DESKTOP);
 
+   ecore_exe_run("killall -9 ecomorph", NULL);
 
-   snprintf(buf, sizeof(buf), "%s/%s", e_user_homedir_get(), ".ecomp/run_ecomorph");
-   evil = (ecore_file_exists(buf) ? 1 : 0);
-   
-   if (evil)
-     {
-       eco_actions_create();
-       eco_event_init();
-       e_config->desk_flip_animate_mode = -1;
-       active = 1;
-     }
-   
+
    conf_module = m;
+   e_module_priority_set(m,-1000);
    e_module_delayed_set(m, 0);
+
+   INF("Initialized Ecomorph Module");
+
+   eco_actions_create();
+   eco_event_init();
+   e_config->desk_flip_animate_mode = -1;
+
+   e_mod_run_ecomorph();
 
    return m;
 }
@@ -209,31 +214,16 @@ e_modapi_shutdown(E_Module *m)
 	maug = NULL;
      }
 
-   if (active)
-     {
-       eco_actions_free();
-       eco_event_shutdown();
+   ecore_event_handler_del(config->eeh);
+   ecore_exe_kill(config->exe);
 
-       e_config->desk_flip_animate_mode = 0;
+   if(config->cmd)
+      eina_stringshare_del(config->cmd);
 
-       /* module is unloaded via gui */
-       /* FIXME got to restart e after unloading the module anyway */
-       /* if (!stopping)
-        * 	 {
-        * 	   Eina_List *l;
-        * 	   E_Border *bd;
-        * 
-        * 	   EINA_LIST_FOREACH(e_border_client_list(), l, bd)
-        * 	     {
-        * 	       bd->changed = 1;
-        * 	       bd->changes.pos = 1;
-        * 	       bd->fx.x = 0;
-        * 	       bd->fx.y = 0;
-        * 		
-        * 	       ecore_x_window_move(bd->win, bd->x, bd->y);
-        * 	     }
-        * 	 } */
-     }
+   eco_actions_free();
+   eco_event_shutdown();
+
+   e_config->desk_flip_animate_mode = 0;
 
 
    if(config->dropshadow == 1)
@@ -274,7 +264,85 @@ _e_mod_menu_add(void *data, E_Menu *m)
    
    mi = e_menu_item_new(m);
    e_menu_item_label_set(mi, _("Ecomorph"));
-   e_menu_item_icon_edje_set(mi, edje_file, "icon");
+   e_menu_item_icon_edje_set(mi, config->edje_file, "icon");
    e_menu_item_callback_set(mi, _e_mod_run_cb, NULL);
 }
 
+void
+e_mod_run_ecomorph()
+{
+   char buf[PATH_MAX];
+   char *ecomorph[] = 
+     {
+        "/usr/bin/ecomorph",
+        "/opt/bin/ecomorph",
+        "/usr/local/bin/ecomorph", 
+        "/opt/local/bin/ecomorph"
+     };
+   int i;
+
+   for (i = 0; i < 3; i++)
+     {
+        if(ecore_file_exists(ecomorph[i]) == EINA_TRUE)
+          {
+             snprintf(buf, sizeof(buf), "%s %s", ecomorph[i], config->base_plugins);
+             config->cmd = eina_stringshare_add(buf);
+             break;
+          }
+     }
+
+   DBG("CMD:%s",buf);
+
+   config->exe = ecore_exe_pipe_run(buf,
+                                    ECORE_EXE_PIPE_WRITE |
+                                    ECORE_EXE_PIPE_READ_LINE_BUFFERED |
+                                    ECORE_EXE_PIPE_ERROR_LINE_BUFFERED,
+                                    //ECORE_EXE_PIPE_ERROR |
+                                    //  ECORE_EXE_USE_SH, 
+                                    //ECORE_EXE_PIPE_READ,
+                                    NULL);
+
+   if(config->exe == NULL)
+      CRI("Unable to launch: \"%s\"", buf);
+
+   if((config->exe_pid = ecore_exe_pid_get(config->exe)) == -1 )
+     {
+        CRI("Unable to get pid!");
+     }
+   else
+      DBG("Ecomorph Pid:%d", config->exe_pid);
+
+   config->eeh = ecore_event_handler_add(ECORE_EXE_EVENT_DEL,
+                                         _e_mod_event_del_handler, NULL);
+   return;
+}
+
+static Eina_Bool
+_e_mod_event_del_handler(void *data, int type, void *event)
+{
+   Ecore_Exe_Event_Del *eed;
+   const char *cmd;
+
+   if(!(eed = event)) return ECORE_CALLBACK_CANCEL;
+   if(!eed->exe) return ECORE_CALLBACK_CANCEL;
+
+   cmd = ecore_exe_cmd_get(eed->exe);
+   if(!cmd) return ECORE_CALLBACK_CANCEL;
+
+   if(strcmp(config->cmd, cmd) == 0)
+     {
+        WRN("ECOMORPH DIED!");
+
+        if(config->exe_pid == eed->pid)
+          {
+             WRN("This was my child, reloading ecomorph!");
+
+             ecore_event_handler_del(config->eeh);
+             e_mod_run_ecomorph();
+          }
+     }
+
+   return ECORE_CALLBACK_DONE;
+}
+
+/* vim:set ts=8 sw=3 sts=3 expandtab cino=>5n-2f0^-2{2(0W1st0 :*/

@@ -1,4 +1,4 @@
-#include "e_mod_main.h"
+#include "eco_config.h"
 
 /* TODO
  beam_color

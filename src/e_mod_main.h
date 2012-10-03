@@ -51,16 +51,63 @@
   
 #define MOD(a,b) ((a) < 0 ? ((b) - ((-(a) - 1) % (b))) - 1 : (a) % (b))
 
-#include "eco_config.h"
+#undef DBG
+#undef INF
+#undef WRN
+#undef ERR
+#undef CRI
+#define DBG(...)            EINA_LOG_DOM_DBG(ecomorph_log, __VA_ARGS__)
+#define INF(...)            EINA_LOG_DOM_INFO(ecomorph_log, __VA_ARGS__)
+#define WRN(...)            EINA_LOG_DOM_WARN(ecomorph_log, __VA_ARGS__)
+#define ERR(...)            EINA_LOG_DOM_ERR(ecomorph_log, __VA_ARGS__)
+#define CRI(...)            EINA_LOG_DOM_CRIT(ecomorph_log, __VA_ARGS__)
+
+#define BUFFER_SIZE 1024
+
+extern int ecomorph_log;
+
 #include "eco_actions.h"
 #include "eco_event.h"
 
 typedef struct _Config Config;
+typedef struct _Eco_Group Eco_Group;
+typedef struct _Eco_Option Eco_Option;
+
+struct _Eco_Group
+{
+    Eina_Hash *data;
+};
+
+struct _Eco_Option
+{
+    int type;
+
+    int intValue;
+    double doubleValue;
+    char *stringValue;
+    Eina_List *listValue;
+};
+
 struct _Config 
 {
    int dropshadow;
    int compscale;
    int composite;
+   const char *base_plugins;
+   const char *edje_file;
+   const char *cmd;
+
+   Eco_Group  *cfg_screen;
+   Eco_Group  *cfg_display;
+   Eco_Option *cfg_option;
+
+   Eet_Data_Descriptor *eco_edd_group;
+   Eet_Data_Descriptor *eco_edd_option;
+
+   Ecore_Exe *exe;
+   Ecore_Timer *exe_t;
+   Ecore_Event_Handler *eeh;
+   pid_t exe_pid;
 };
 
 EAPI extern E_Module_Api e_modapi;
@@ -71,5 +118,8 @@ EAPI int   e_modapi_save     (E_Module *m);
 
 extern Ecore_X_Atom ECOMORPH_ATOM_MANAGED;
 extern Ecore_X_Atom ECOMORPH_ATOM_PLUGIN;
+extern Config *config;
+
+void e_mod_run_ecomorph();
 #endif
 

@@ -1,4 +1,5 @@
-#include "e_mod_main.h"
+#include <e.h>
+#include "eco_config.h"
 
 static void *_create_data(E_Config_Dialog *cfd);
 static void  _fill_data(E_Config_Dialog_Data *cfdata);
@@ -10,7 +11,6 @@ E_Config_Dialog_Data *dialog_data;
 
 static void (*_eco_apply_func)(E_Config_Dialog_Data *cfdata); //Pointer to the apply function to call
 static void (*_eco_cleanup_func)(void);
-static const char *current_search;
 Ecore_Timer *timer;
 
 //Match dialog objects
@@ -41,13 +41,10 @@ int _eco_type_toolbar;
 int _eco_type_unknown;
 
 
-Eco_Group *cfg_screen;
-Eco_Group *cfg_display;
-
 static Eet_File *eco_config_file = NULL;
 static char file_path[2048] = "";
 
-EAPI int
+Eina_Bool
 eco_config_file_open()
 {
   /* FIXME configuration */
@@ -80,9 +77,9 @@ eco_config_file_open()
 	eco_config_file = eet_open(file_path, EET_FILE_MODE_READ_WRITE);
     }
 
-  printf("loaded %s %d\n", file_path, eco_config_file ? 1 : 0);
+  printf("loaded %s %d\n", file_path, eco_config_file ? EINA_TRUE : EINA_FALSE);
   
-  return eco_config_file ? 1 : 0;  
+  return eco_config_file ? EINA_TRUE : EINA_FALSE;  
 }
 
 EAPI void
@@ -108,28 +105,28 @@ eco_config_group_open(const char *group)
   
   if (eco_config_file)
     {
-      cfg_display = eet_data_read(eco_config_file, eco_edd_group, group_display);
-      cfg_screen  = eet_data_read(eco_config_file, eco_edd_group, group_screen);
+      config->cfg_display = eet_data_read(eco_config_file, config->eco_edd_group, group_display);
+      config->cfg_screen  = eet_data_read(eco_config_file, config->eco_edd_group, group_screen);
     }
-  if (cfg_display)
+  if (config->cfg_display)
     {
-      printf("loaded %s:%d\n", group_display, cfg_display ? 1 : 0);
+      printf("loaded %s:%d\n", group_display, config->cfg_display ? 1 : 0);
     }
   else
     {
       printf("create %s\n", group_display);
-      cfg_display = calloc(1, sizeof(Eco_Group));
-      cfg_display->data = eina_hash_string_superfast_new(NULL);
+      config->cfg_display = calloc(1, sizeof(Eco_Group));
+      config->cfg_display->data = eina_hash_string_superfast_new(NULL);
     }
-  if (cfg_screen)
+  if (config->cfg_screen)
     {
-      printf("loaded %s:%d\n", group_screen, cfg_screen ? 1 : 0);      
+      printf("loaded %s:%d\n", group_screen, config->cfg_screen ? 1 : 0);      
     }
   else
     {
       printf("create %s\n", group_screen);
-      cfg_screen = calloc (1, sizeof(Eco_Group));
-      cfg_screen->data = eina_hash_string_superfast_new(NULL);
+      config->cfg_screen = calloc (1, sizeof(Eco_Group));
+      config->cfg_screen->data = eina_hash_string_superfast_new(NULL);
     }
 }
 
@@ -142,9 +139,9 @@ eco_config_group_apply(const char *group)
   snprintf(group_display, 1024, "%s-allscreens", group); 
   printf("write %s - %s\n", group_screen, group_display);
   
-  if (!eet_data_write(eco_config_file, eco_edd_group, group_display, cfg_display, 1))
+  if (!eet_data_write(eco_config_file, config->eco_edd_group, group_display, config->cfg_display, 1))
     fprintf(stderr, "Error writing data! - Display\n");
-  if (!eet_data_write(eco_config_file, eco_edd_group, group_screen, cfg_screen, 1))
+  if (!eet_data_write(eco_config_file, config->eco_edd_group, group_screen, config->cfg_screen, 1))
     fprintf(stderr, "Error writing data! - Screen\n");
 
   int err = eet_close(eco_config_file);
@@ -178,19 +175,19 @@ eco_config_group_close()
 {
   printf("close group\n");
   
-  if (cfg_screen)
+  if (config->cfg_screen)
     {
-      if (cfg_screen->data)
-	eina_hash_foreach(cfg_screen->data,  _eco_free_group, NULL);
-      free(cfg_screen);
-      cfg_screen  = NULL;
+      if (config->cfg_screen->data)
+	eina_hash_foreach(config->cfg_screen->data,  _eco_free_group, NULL);
+      free(config->cfg_screen);
+      config->cfg_screen  = NULL;
     }
-  if (cfg_display)
+  if (config->cfg_display)
     {
-      if (cfg_display->data)
-	eina_hash_foreach(cfg_display->data, _eco_free_group, NULL);
-      free(cfg_display);
-      cfg_display = NULL;
+      if (config->cfg_display->data)
+	eina_hash_foreach(config->cfg_display->data, _eco_free_group, NULL);
+      free(config->cfg_display);
+      config->cfg_display = NULL;
     }
 }
 
@@ -232,7 +229,7 @@ eco_config_option_list_add(Eco_Group *group, const char *option)
 EAPI Eco_Option *
 eco_config_option_list_del(Eco_Group *group, const char *option, int num)
 {
-  Eco_Option *opt = eco_config_option_get(cfg_screen, option);
+  Eco_Option *opt = eco_config_option_get(config->cfg_screen, option);
   Eco_Option *item = eina_list_nth(opt->listValue, num);
   if (item)
     {
@@ -240,6 +237,7 @@ eco_config_option_list_del(Eco_Group *group, const char *option, int num)
       if (item->stringValue) free (item->stringValue);
       free(item);
     }
+  return NULL;
 }
 
 
@@ -289,7 +287,7 @@ EAPI void
 eco_match_dialog(const char *val, void *_ok_func)
 {
    E_Dialog *dia;
-   Evas_Object *ob, *li, *ta, *entry;
+   Evas_Object *li, *ta, *entry;
    char *name;
 
    dia = e_dialog_new(e_container_current_get(e_manager_current_get()), "E", "_match_dialog");
@@ -432,12 +430,17 @@ _eco_check_ecomorph(void *data)
 static void
 _eco_start_ecomorph(void *data, void *data2)
 {
-   ecore_exe_run("xterm -hold -e ecomp.sh", NULL);
+   e_mod_run_ecomorph(eco_config_option_get(
+               config->cfg_display, "active_plugins")->listValue);
+
 }
 
 static void
 _eco_stop_ecomorph(void *data, void *data2)
 {
+   ecore_event_handler_del(config->eeh);
+   ecore_exe_free(config->exe);
+   config->exe = NULL;
    ecore_exe_run("killall ecomorph", NULL);
 }
 
@@ -450,123 +453,123 @@ eco_list_populate(Evas_Object *list)
    e_widget_ilist_header_append(list, NULL, _("Ecomorph"));
    
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon");
+   e_icon_file_edje_set(ico, config->edje_file, "icon");
    e_widget_ilist_append(list, ico, _("General"), eco_config_general, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon");
+   e_icon_file_edje_set(ico, config->edje_file, "icon");
    e_widget_ilist_append(list, ico, _("Window opacity"), eco_config_opacity, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon");
+   e_icon_file_edje_set(ico, config->edje_file, "icon");
    e_widget_ilist_append(list, ico, _("Window Move/Resize"), eco_config_move, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon");
+   e_icon_file_edje_set(ico, config->edje_file, "icon");
    e_widget_ilist_append(list, ico, _("Drop Shadow"), eco_config_decoration, dialog_data, NULL);
 
    //Animations
    e_widget_ilist_header_append(list, NULL, _("Animations"));
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Open animation"), eco_config_animation_open, dialog_data, NULL);
    
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Close animation"), eco_config_animation_close, dialog_data, NULL);
    
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Minimize animation"), eco_config_animation_minimize, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Focus animation"), eco_config_animation_focus, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Effect settings (1)"), eco_config_animation, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Effect settings (2)"), eco_config_animation3, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Effect settings (3)"), eco_config_animation4, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_animation");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_animation");
    e_widget_ilist_append(list, ico, _("Effect Settings (4)"), eco_config_animation5, dialog_data, NULL);
 
    //Switchers
    e_widget_ilist_header_append(list, NULL, _("Switchers"));
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_scale");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_scale");
    e_widget_ilist_append(list, ico, _("Scale 'Exposè' effect"), eco_config_scale, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_scale");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_scale");
    e_widget_ilist_append(list, ico, _("Scale Addons"), eco_config_scaleaddon, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_switcher");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_switcher");
    e_widget_ilist_append(list, ico, _("Application switcher"), eco_config_switcher, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_shift");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_shift");
    e_widget_ilist_append(list, ico, _("Application Shift switcher"), eco_config_shift, dialog_data, NULL);
    
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_ring");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_ring");
    e_widget_ilist_append(list, ico, _("Application Ring switcher"), eco_config_ring, dialog_data, NULL);
 
    //Desktop
    e_widget_ilist_header_append(list, NULL, _("Desktop"));
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_expo");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_expo");
    e_widget_ilist_append(list, ico, _("Expo wall"), eco_config_expo, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_wall");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_wall");
    e_widget_ilist_append(list, ico, _("Wall of desktop"), eco_config_wall, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_cube");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_cube");
    e_widget_ilist_append(list, ico, _("Cube"), eco_config_cube, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_cube");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_cube");
    e_widget_ilist_append(list, ico, _("Cube Rotate"), eco_config_rotate, dialog_data, NULL);
 
    //Effects
    e_widget_ilist_header_append(list, NULL, _("Effects"));
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_wobbly");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_wobbly");
    e_widget_ilist_append(list, ico, _("Wobbly windows"), eco_config_wobbly, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_water");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_water");
    e_widget_ilist_append(list, ico, _("Water effect"), eco_config_water, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_blur");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_blur");
    e_widget_ilist_append(list, ico, _("Blur effect"), eco_config_blur, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_blur");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_blur");
    e_widget_ilist_append(list, ico, _("Motion Blur"), eco_config_mblur, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_thumbnail");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_thumbnail");
    e_widget_ilist_append(list, ico, _("Thumbnail"), eco_config_thumbnail, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, edje_file, "icon_cube");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_cube");
    e_widget_ilist_append(list, ico, _("Cube Reflexions"), eco_config_cubereflex, dialog_data, NULL);
 
 }
@@ -586,12 +589,10 @@ e_int_config_eco(E_Container *con, const char *params)
    v->basic.create_widgets = _basic_create_widgets;
    
    eco_config_file_open();
-   cfg_screen = NULL;
-   cfg_display = NULL;
    
    cfd = e_config_dialog_new(con, _("Ecomorph Configuration"),
                              "E", "appearance/eco",
-                             edje_file, 0, v, NULL);
+                             config->edje_file, 0, v, NULL);
 
    e_win_resize(cfd->dia->win, 850, 720);
    e_dialog_resizable_set(cfd->dia, 1);
@@ -614,8 +615,6 @@ _create_data(E_Config_Dialog *cfd)
 static void
 _fill_data(E_Config_Dialog_Data *cfdata)
 {
-   cfdata->use_composite = e_config->use_composite;
-   cfdata->ecomorph = evil;
    cfdata->o_start = NULL;
    cfdata->o_stop = NULL;
 }
@@ -635,61 +634,34 @@ _free_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
 static int
 _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
 {
+    Eina_List *active, *l;
+    Eco_Option *opt;
+    char *argv = "";
    if (_eco_apply_func) _eco_apply_func(cfdata);
-   char state_file[1024];
+   e_config->use_composite = EINA_TRUE;
+
+   active = eina_list_clone(eco_config_option_get(config->cfg_display,
+               "active_plugins")->listValue);
    
-   e_config->use_composite = cfdata->use_composite;
+   EINA_LIST_FOREACH(active, l, opt)
+   {
+       char buf[256];
+
+       snprintf(buf, 256, "%s %s", argv, opt->stringValue);
+       argv = strdup(buf);
+   }
+   DBG(argv);
+   config->base_plugins = eina_stringshare_add(argv);
+
    e_config_save_queue();
 
-   E_Action *a;
-
-   if (cfdata->ecomorph != evil)
-     {
-	evil = cfdata->ecomorph;
-	
-	if (!evil)
-	  {
-	     Eina_List *l;
-	     E_Border *bd;
-      
-	     EINA_LIST_FOREACH(e_border_client_list(), l, bd)
-	       {
-		  bd->changed = 1;
-		  bd->changes.pos = 1;
-		  bd->fx.x = 0;
-		  bd->fx.y = 0;
-      		
-		  ecore_x_window_move(bd->win, bd->x, bd->y);
-	       }
-      
-	     eco_actions_free();
-	     eco_event_shutdown();
-      
-	     e_config->desk_flip_animate_mode = 0;
-
-	     e_config_save();
-	  }
-      
-	snprintf(state_file, sizeof(state_file), "%s/%s", e_user_homedir_get(), ".ecomp/run_ecomorph");
-	if (evil)
-	  ecore_file_mkdir(state_file);
-	else
-	  ecore_file_rmdir(state_file);
-
-	/* e_util_env_set("E_ECOMORPH", evil ? "1" : "0"); */
-	a = e_action_find("restart");
-	if ((a) && (a->func.go)) a->func.go(NULL, NULL);
-     }
-   
    return 1;
 }
 
 static Evas_Object *
 _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cfdata)
 {
-  Evas_Object *o, *ob, *of, *sf, *list, *ol;
-   Eina_List *l;
-   int engine;
+  Evas_Object *o, *ob, *of, *list, *ol;
 
    dialog_data = cfdata;
    dialog_data->evas = evas;
@@ -699,16 +671,7 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    ol = e_widget_list_add(evas, 0, 0);
       
    of = e_widget_frametable_add(evas, _("Ecomorph"), 0);
-
-   //e configs
-   /* ob = e_widget_check_add(evas, _("Enable Composite"),
-    *                         &(cfdata->use_composite));
-    * e_widget_frametable_object_append(of, ob, 0, 1, 2, 1, 1, 0, 0, 0); */
-   
-   ob = e_widget_check_add(evas, _("Ecomorph Mode"),
-                           &(cfdata->ecomorph));
-   e_widget_frametable_object_append(of, ob, 0, 0, 2, 1, 1, 0, 0, 0);
-   
+  
    ob = e_widget_button_add(evas, _("Start Ecomp"), NULL,
                             _eco_start_ecomorph, NULL, NULL);
    e_widget_frametable_object_append(of, ob, 0, 1, 1, 1, 1, 0, 0, 0);
@@ -744,7 +707,7 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    
    e_widget_list_object_append(o, cfdata->o_container, 1, 1, 0.0);
 
-   //e_dialog_resizable_set(cfd->dia, 1);
+   e_dialog_resizable_set(cfd->dia, 1);
    eco_config_general(cfdata);
    
    //Check if ecomorph is running and run the timer

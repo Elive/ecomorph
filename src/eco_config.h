@@ -3,14 +3,11 @@
 #ifndef E_INT_CONFIG_ECO_H
 #define E_INT_CONFIG_ECO_H
 
+#include "e_mod_main.h"
 
 struct _E_Config_Dialog_Data
 {
    E_Config_Dialog *cfd;
-   E_DBus_Connection *conn;
-   
-   int use_composite;
-   int ecomorph;
   
    Evas *evas;
    Evas_Object *o_container;
@@ -18,21 +15,6 @@ struct _E_Config_Dialog_Data
    Evas_Object *o_start;
    Evas_Object *o_stop;
 };
-
-typedef struct _Eco_Option
-{
-  int type;
-
-  int intValue;
-  double doubleValue;
-  char *stringValue;
-  Eina_List *listValue;
-}Eco_Option;
-
-typedef struct _Eco_Group
-{
-  Eina_Hash *data;
-}Eco_Group;
 
 EAPI E_Config_Dialog *e_int_config_eco(E_Container *con, const char *params);
 
@@ -45,13 +27,6 @@ EAPI Eco_Option *eco_config_option_get(Eco_Group *group, const char *option);
 EAPI Eco_Option *eco_config_option_list_nth(Eco_Group *group, const char *option, int num);
 EAPI Eco_Option *eco_config_option_list_del(Eco_Group *group, const char *option, int num);
 EAPI Eco_Option *eco_config_option_list_add(Eco_Group *group, const char *option);
-
-E_DBus_Connection *dbus_con;
-const char *edje_file;
-
-extern Eco_Group *cfg_screen;
-extern Eco_Group *cfg_display;
-extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_PAGE_BEGIN(PLUGIN_NAME)		\
   Evas_Object *ob, *ta, *li;			\
@@ -75,7 +50,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_CREATE_CHECKBOX(SCREEN, NAME,LABEL,COL,ROW)		\
   Eco_Option *opt_##NAME = eco_config_option_get((SCREEN < 0) ?		\
-						 cfg_display : cfg_screen, #NAME); \
+						 config->cfg_display : config->cfg_screen, #NAME); \
   o = e_widget_check_add(cfdata->evas, _(LABEL), &(opt_##NAME->intValue)); \
   e_widget_check_checked_set(o,	opt_##NAME->intValue);			\
   e_widget_frametable_object_append(ta, o, COL, ROW, 1, 1, 1, 0, 0, 0);
@@ -83,7 +58,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_CREATE_SLIDER_INT(SCREEN, NAME,LABEL,MIN,MAX,FORMAT,COL,ROW) \
   Eco_Option *opt_##NAME = eco_config_option_get((SCREEN < 0) ?		\
-						 cfg_display : cfg_screen, #NAME); \
+						 config->cfg_display : config->cfg_screen, #NAME); \
   o = e_widget_label_add(cfdata->evas, _(LABEL));			\
   e_widget_frametable_object_append(ta, o, COL, ROW, 1, 1, 1, 0, 0, 0);	\
   o = e_widget_slider_add(cfdata->evas, 1, 0, FORMAT, MIN, MAX, 1.0, 0, NULL, \
@@ -100,7 +75,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_CREATE_SLIDER_DOUBLE(SCREEN, NAME,LABEL,MIN,MAX,FORMAT,COL,ROW) \
   Eco_Option *opt_##NAME = eco_config_option_get((SCREEN < 0) ?		\
-						 cfg_display : cfg_screen, #NAME); \
+						 config->cfg_display : config->cfg_screen, #NAME); \
   o = e_widget_label_add(cfdata->evas, _(LABEL));			\
   e_widget_frametable_object_append(ta, o, COL, ROW, 1, 1, 1, 0, 0, 0);	\
   o = e_widget_slider_add(cfdata->evas, 1, 0, FORMAT, MIN, MAX, 0.0001, 0, \
@@ -109,7 +84,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_CREATE_ENTRY(SCREEN, NAME,LABEL,COL,ROW)			\
   Eco_Option *opt_##NAME = eco_config_option_get((SCREEN < 0) ?		\
-						 cfg_display : cfg_screen, #NAME); \
+						 config->cfg_display : config->cfg_screen, #NAME); \
   o = e_widget_label_add(cfdata->evas, LABEL);			\
   e_widget_frametable_object_append(ta, o, COL, ROW, 1, 1, 1, 0, 0, 0); \
   o = e_widget_entry_add(cfdata->evas,  &(opt_##NAME->stringValue), NULL, NULL, NULL); \
@@ -117,7 +92,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
 
 #define ECO_CREATE_RADIO_GROUP(SCREEN, NAME,LABEL,OPTIONS,OPT_NUM,COL,ROW) \
   opt = eco_config_option_get((SCREEN < 0) ?				\
-			      cfg_display : cfg_screen, #NAME);		\
+			      config->cfg_display : config->cfg_screen, #NAME);		\
     o = e_widget_label_add(cfdata->evas, _(LABEL));			\
     e_widget_frametable_object_append(ta, o, COL, ROW, 1, 1, 1, 0, 0, 0); \
     group = e_widget_radio_group_new(&(opt->intValue));			\
@@ -145,7 +120,7 @@ extern Eet_Data_Descriptor *eco_edd_group, *eco_edd_option;
   o_matches = e_widget_ilist_add(cfdata->evas, 0, 0, NULL);		\
   e_widget_size_min_set(o_matches, 100, 110);				\
   opt = eco_config_option_get((SCREEN < 0) ?				\
-			      cfg_display : cfg_screen, NAME);		\
+			      config->cfg_display : config->cfg_screen, NAME);		\
   for (l = (opt->listValue); l; l = l->next) {				\
       e_widget_ilist_append(o_matches, NULL,				\
 			    ((Eco_Option *)l->data)->stringValue,	\
@@ -212,5 +187,7 @@ EAPI void eco_config_rotate(void *data);
 EAPI void eco_config_thumbnail(void *data);
 EAPI void eco_config_decoration(void *data);
 
+Eina_Bool eco_config_file_open();
+EAPI void eco_config_file_close();
 #endif
 #endif
