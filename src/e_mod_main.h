@@ -96,6 +96,12 @@ struct _Config
    const char *base_plugins;
    const char *edje_file;
    const char *cmd;
+   const char *cmd_sh;
+   const char *cmd_options;
+   const char *cmd_plugins;
+   
+   Eina_Bool cmd_plugins_override;
+   Eina_Bool cmd_sh_ended;
 
    Eco_Group  *cfg_screen;
    Eco_Group  *cfg_display;
@@ -108,6 +114,7 @@ struct _Config
    Ecore_Timer *exe_t;
    Ecore_Event_Handler *eeh;
    pid_t exe_pid;
+   int cmd_retry;
 };
 
 EAPI extern E_Module_Api e_modapi;

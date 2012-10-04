@@ -11,6 +11,7 @@ int ecomorph_log;
 static void  _e_mod_run_cb(void *data, E_Menu *m, E_Menu_Item *mi);
 static void  _e_mod_menu_add(void *data, E_Menu *m);
 static Eina_Bool _e_mod_event_del_handler(void *data, int type, void *event);
+void e_mod_run_ecomp_sh();
 
 Ecore_X_Atom ECOMORPH_ATOM_MANAGED = 0;
 Ecore_X_Atom ECOMORPH_ATOM_MOVE_RESIZE = 0;
@@ -182,20 +183,19 @@ e_modapi_init(E_Module *m)
       ECORE_X_WINDOW_TYPE_DESKTOP);
 
    ecore_exe_run("killall -9 ecomorph", NULL);
-
+   INF("Initialized Ecomorph Module");
 
    conf_module = m;
+   
+   e_mod_run_ecomp_sh();
+   
    e_module_priority_set(m,-1000);
    e_module_delayed_set(m, 0);
-
-   INF("Initialized Ecomorph Module");
 
    eco_actions_create();
    eco_event_init();
    e_config->desk_flip_animate_mode = -1;
-
-   e_mod_run_ecomorph();
-
+   
    return m;
 }
 
@@ -283,9 +283,13 @@ e_mod_run_ecomorph()
 
    for (i = 0; i < 3; i++)
      {
-        if(ecore_file_exists(ecomorph[i]) == EINA_TRUE)
+        if(ecore_file_exists(ecomorph[i]) == EINA_TRUE) 
           {
-             snprintf(buf, sizeof(buf), "%s %s", ecomorph[i], config->base_plugins);
+             if(!config->cmd_plugins_override)
+                snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->base_plugins);
+             else
+                snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->cmd_plugins);
+
              config->cmd = eina_stringshare_add(buf);
              break;
           }
@@ -333,16 +337,149 @@ _e_mod_event_del_handler(void *data, int type, void *event)
      {
         WRN("ECOMORPH DIED!");
 
-        if(config->exe_pid == eed->pid)
+        if((config->exe_pid == eed->pid) && (config->cmd_sh_ended == EINA_TRUE))
           {
+          /*   if(config->cmd_retry >= 3) //FIXME: do this better
+               {
+                  CRI("died 3 times");
+                  ecore_event_handler_del(config->eeh);
+                  ecore_exe_free(config->exe);
+               }*/
              WRN("This was my child, reloading ecomorph!");
 
              ecore_event_handler_del(config->eeh);
              e_mod_run_ecomorph();
+             config->cmd_retry++;
           }
      }
 
    return ECORE_CALLBACK_DONE;
+}
+
+static Eina_Bool
+_e_mod_event_data_handler_ecomp_sh(void *data, int type, void *event)
+{
+   Ecore_Exe_Event_Data *eed;
+   char **arr;
+   int i;
+
+   if(!(eed = event)) return ECORE_CALLBACK_CANCEL;
+   if(!eed->exe) return ECORE_CALLBACK_CANCEL;
+
+   if(eed->size >= (BUFFER_SIZE -1 ))
+     {
+        DBG("Data too big for buffer:%d", eed->size);
+        return ECORE_CALLBACK_DONE;
+     }
+
+   arr = eina_str_split((const char *)eed->data, "[n]", 0);
+   
+   for (i = 0; arr[i]; i++)
+     {
+        if(eina_str_has_prefix(arr[i], "ECOMORPH_OPTIONS:") == EINA_TRUE)
+          {
+             char **options;
+             options = eina_str_split(arr[i], ":", 2);
+             
+             if(options[1])
+                config->cmd_options = strdup(options[1]);
+             
+             E_FREE(options[0]);
+             E_FREE(options);
+             INF("CMD_OPTIONS:%s", config->cmd_options);
+          }
+       
+       if(eina_str_has_prefix(arr[i], "ECOMORPH_PLUGINS:") == EINA_TRUE)
+         {
+            char **plugins;
+            plugins = eina_str_split(arr[i], ":", 2);
+
+            if(plugins[1])
+              config->cmd_plugins = strdup(plugins[1]);
+            
+            E_FREE(plugins[0]);
+            E_FREE(plugins);
+            INF("CMD_PLUGINS:%s", config->cmd_plugins);
+         }
+
+       if(eina_str_has_prefix(arr[i], "ECOMORPH_PLUGINS_OVERRIDE:") == EINA_TRUE)
+         {
+            char **override;
+            override = eina_str_split(arr[i], ":", 2);
+
+            if(strncmp(override[1],"yes", 3) == 0)
+               config->cmd_plugins_override = EINA_TRUE;
+              
+            E_FREE(override[0]);
+            E_FREE(override);
+            INF("CMD_PLUGINS_OVERRIDE:%d", config->cmd_plugins_override);
+         } 
+
+     }
+   E_FREE(arr[0]);
+   E_FREE(arr);
+
+   return ECORE_CALLBACK_DONE;
+}
+
+static Eina_Bool
+_e_mod_event_del_handler_ecomp_sh(void *data, int type, void *event)
+{
+   Ecore_Exe_Event_Del *eed;
+   const char *cmd;
+
+   if(!(eed = event)) return ECORE_CALLBACK_CANCEL;
+   if(!eed->exe) return ECORE_CALLBACK_CANCEL;
+
+   cmd = ecore_exe_cmd_get(eed->exe);
+   if(!cmd) return ECORE_CALLBACK_CANCEL;
+
+   
+   if(strcmp(config->cmd_sh, cmd) == 0)
+     {
+        WRN("CMD_SH:%s", config->cmd_sh);
+        config->cmd_sh_ended = EINA_TRUE;
+        ecore_event_handler_del(config->eeh);
+
+        e_mod_run_ecomorph();
+     }
+
+   return ECORE_CALLBACK_DONE;
+}
+
+void
+e_mod_run_ecomp_sh()
+{
+   char *ecomp_sh[] = 
+     {
+        "/usr/bin/ecomp.sh",
+        "/opt/bin/ecomp.sh",
+        "/usr/local/bin/ecomp.sh", 
+        "/opt/local/bin/ecomp.sh"
+     };
+   int i;
+
+   for (i = 0; i < 3; i++)
+      if(ecore_file_exists(ecomp_sh[i]) == EINA_TRUE)
+         break;
+
+   config->cmd_sh = eina_stringshare_add(ecomp_sh[i]);
+
+   config->exe = ecore_exe_pipe_run(ecomp_sh[i],
+                                    ECORE_EXE_PIPE_WRITE |
+                                    ECORE_EXE_PIPE_READ_LINE_BUFFERED |
+                                    ECORE_EXE_PIPE_ERROR_LINE_BUFFERED |
+                                    ECORE_EXE_PIPE_ERROR |
+                                    ECORE_EXE_USE_SH |
+                                    ECORE_EXE_PIPE_READ,
+                                    NULL);
+
+   config->eeh = ecore_event_handler_add(ECORE_EXE_EVENT_DATA,
+                                         _e_mod_event_data_handler_ecomp_sh, NULL);
+
+   config->eeh = ecore_event_handler_add(ECORE_EXE_EVENT_DEL,
+                                         _e_mod_event_del_handler_ecomp_sh, NULL);
+   return;
 }
 
 /* vim:set ts=8 sw=3 sts=3 expandtab cino=>5n-2f0^-2{2(0W1st0 :*/
