@@ -56,8 +56,12 @@ T="$T 8086:3577 8086:2562 " # Intel 830MG, 845G (LP: #259385)
 BLACKLIST_PCIIDS="$T"
 unset T
 
+#to override ecomorph [module] selection of COMPIZ_PLUGINS
+#set COMPIZ_PLUGINS_OVERRIDE=yes
+
 COMPIZ_OPTIONS=""
 COMPIZ_PLUGINS="ini inotify"
+COMPIZ_PLUGINS_OVERRIDE="no"
 ENV=""
 
 # No indirect by default
@@ -344,8 +348,9 @@ build_args
 
 
 # these messages are strictly required, do not remove or change them
-printf "ECOMORPH_OPTIONS: $COMPIZ_OPTIONS\n"
-printf "ECOMORPH_PLUGINS: $COMPIZ_PLUGINS\n"
+printf "ECOMORPH_OPTIONS: $COMPIZ_OPTIONS [n]"
+printf "ECOMORPH_PLUGINS: $COMPIZ_PLUGINS [n]"
+printf "ECOMORPH_PLUGINS_OVERRIDE:$COMPIZ_PLUGINS_OVERRIDE \n"
 
 
 if [ "x$CM_DRY" = "xyes" ]; then
