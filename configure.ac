@@ -61,8 +61,6 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
-xsession/ecomorph.desktop
-xsession/Makefile
 po/Makefile.in
 module.desktop
 e_modules-ecomorph.spec
