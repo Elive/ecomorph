@@ -285,6 +285,9 @@ e_mod_run_ecomorph()
      {
         if(ecore_file_exists(ecomorph[i]) == EINA_TRUE) 
           {
+             if(!config->cmd_options)
+                config->cmd_options = eina_stringshare_add("");
+
              if(!config->cmd_plugins_override)
                 snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->base_plugins);
              else
