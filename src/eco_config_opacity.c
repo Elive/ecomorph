@@ -11,7 +11,7 @@ static void
 _eco_match_click_cb(void *data)
 {
   int sel = e_widget_ilist_selected_get(o_matches);
-  Eco_Option *value = eco_config_option_list_nth(config->cfg_screen, "opacity_values", sel);
+  Eco_Option *value = eco_config_option_list_nth(cfg_screen, "opacity_values", sel);
   if (value)
     {
       e_widget_slider_value_int_set(o_opacity, value->intValue);
@@ -27,7 +27,7 @@ _apply(E_Config_Dialog_Data *cfdata)
   int val;
   e_widget_slider_value_int_get(o_opacity, &val);
   int sel = e_widget_ilist_selected_get(o_matches);
-  value = eco_config_option_list_nth(config->cfg_screen, "opacity_values", sel);
+  value = eco_config_option_list_nth(cfg_screen, "opacity_values", sel);
   if (value) value->intValue = val;
   
   eco_config_group_apply("core"); 
@@ -40,9 +40,9 @@ _eco_match_add(void *data, void *data2)
   e_widget_ilist_append(o_matches, NULL, "class=XTerm",
 			_eco_match_click_cb, NULL, NULL);
 
-  match = eco_config_option_list_add(config->cfg_screen, "opacity_matches");
-  match->stringValue = strdup("class=XTerm");  
-  value = eco_config_option_list_add(config->cfg_screen, "opacity_values");
+  match = eco_config_option_list_add(cfg_screen, "opacity_matches");
+  match->stringValue = eina_stringshare_add("class=XTerm");  
+  value = eco_config_option_list_add(cfg_screen, "opacity_values");
   value->intValue = 100;
   e_widget_slider_value_int_set(o_opacity, value->intValue);
   
@@ -62,11 +62,11 @@ _eco_match_dialog_ok_cb(void *data, E_Dialog *dia)
   const char *val = e_widget_entry_text_get(entry);	
   e_widget_ilist_nth_label_set(o_matches, sel, val);
   
-  match = eco_config_option_list_nth(config->cfg_screen, "opacity_matches", sel);
+  match = eco_config_option_list_nth(cfg_screen, "opacity_matches", sel);
   if (match)
     {
-      free (match->stringValue);
-      match->stringValue = strdup(val);
+      eco_string_free(match->stringValue);
+      match->stringValue = eina_stringshare_add(val);
     }
   e_util_defer_object_del(E_OBJECT(dia));
 }
@@ -86,8 +86,8 @@ _eco_match_del(void *data, void *data2)
   int num = e_widget_ilist_selected_get(o_matches);			
   e_widget_ilist_remove_num(o_matches, num);
 
-  eco_config_option_list_del(config->cfg_screen, "opacity_matches", num);
-  eco_config_option_list_del(config->cfg_screen, "opacity_values", num);
+  eco_config_option_list_del(cfg_screen, "opacity_matches", num);
+  eco_config_option_list_del(cfg_screen, "opacity_values", num);
 }				
 
 

@@ -61,23 +61,23 @@ _apply(E_Config_Dialog_Data *cfdata)
   sel = e_widget_ilist_selected_get(o_matches);
 
   /* set effect */
-  opt = eco_config_option_list_nth(config->cfg_screen, str_effects, sel);
+  opt = eco_config_option_list_nth(cfg_screen, str_effects, sel);
   if (opt) opt->intValue = effect;
 
   /* update match */
   match = e_widget_ilist_nth_label_get(o_matches, sel);
-  opt = eco_config_option_list_nth(config->cfg_screen, str_matches, sel);
+  opt = eco_config_option_list_nth(cfg_screen, str_matches, sel);
   if (opt && match)
     {
-      free (opt->stringValue);
-      opt->stringValue = strdup(match);
+      eco_string_free(opt->stringValue);
+      opt->stringValue = eina_stringshare_add(match);
     }
   /* update duration */
-  opt = eco_config_option_list_nth(config->cfg_screen, str_durations, sel);
+  opt = eco_config_option_list_nth(cfg_screen, str_durations, sel);
   if (opt) opt->intValue = duration;
   
   /* update random effect list */
-  opt = eco_config_option_get(config->cfg_screen, str_randoms);
+  opt = eco_config_option_get(cfg_screen, str_randoms);
   EINA_LIST_FREE(opt->listValue, item) free(item);
   for (i = 0; i < effect_cnt; i++)
     {
@@ -101,29 +101,29 @@ _eco_match_click_cb(void *data)
   const char *match;
   
   /* remember changes to the last selected item */
-  opt = eco_config_option_list_nth(config->cfg_screen, str_effects, selected);
+  opt = eco_config_option_list_nth(cfg_screen, str_effects, selected);
   if (opt) opt->intValue = effect;
   
-  opt = eco_config_option_list_nth(config->cfg_screen, str_durations, selected);
+  opt = eco_config_option_list_nth(cfg_screen, str_durations, selected);
   if (opt) opt->intValue = duration;
 
-  opt = eco_config_option_list_nth(config->cfg_screen, str_matches, selected);
+  opt = eco_config_option_list_nth(cfg_screen, str_matches, selected);
   match = e_widget_ilist_nth_label_get(o_matches, selected);
   if (opt && match)
     {
-      free (opt->stringValue);
-      opt->stringValue = strdup(match);
+      eco_string_free(opt->stringValue);
+      opt->stringValue = eina_stringshare_add(match);
     }
   
   /* set stored values for selected match */
   sel = e_widget_ilist_selected_get(o_matches);
-  opt = eco_config_option_list_nth(config->cfg_screen, str_durations, sel);
+  opt = eco_config_option_list_nth(cfg_screen, str_durations, sel);
   if (opt)
     {
       e_widget_slider_value_int_set(o_duration, opt->intValue);
       e_widget_disabled_set(o_duration, 0);
     }
-  opt = eco_config_option_list_nth(config->cfg_screen, str_effects, sel);
+  opt = eco_config_option_list_nth(cfg_screen, str_effects, sel);
   if (opt)
     {
       e_widget_radio_toggle_set(o_effect[opt->intValue], 1);
@@ -139,19 +139,19 @@ _eco_match_add(void *data, void *data2)
   e_widget_ilist_append(o_matches, NULL, default_match,
 			_eco_match_click_cb, NULL, NULL);
 
-  opt = eco_config_option_list_add(config->cfg_screen, str_matches);
+  opt = eco_config_option_list_add(cfg_screen, str_matches);
   opt->stringValue = strdup(default_match);  
   
-  opt = eco_config_option_list_add(config->cfg_screen, str_effects);
+  opt = eco_config_option_list_add(cfg_screen, str_effects);
   opt->intValue = 11;
   
-  opt = eco_config_option_list_add(config->cfg_screen, str_durations);
+  opt = eco_config_option_list_add(cfg_screen, str_durations);
   opt->intValue = 300;
   e_widget_slider_value_int_set(o_duration, opt->intValue);
   
-  opt = eco_config_option_list_add(config->cfg_screen, str_randoms);
+  opt = eco_config_option_list_add(cfg_screen, str_randoms);
 
-  /* opt = eco_config_option_list_add(config->cfg_screen, str_options); */
+  /* opt = eco_config_option_list_add(cfg_screen, str_options); */
   
   e_widget_disabled_set(o_duration, 0);
   e_widget_ilist_selected_set(o_matches, e_widget_ilist_count(o_matches));
@@ -184,11 +184,11 @@ _eco_match_del(void *data, void *data2)
   int sel = e_widget_ilist_selected_get(o_matches);			
 
   e_widget_ilist_remove_num(o_matches, sel);
-  eco_config_option_list_del(config->cfg_screen, str_effects, sel);
-  eco_config_option_list_del(config->cfg_screen, str_matches, sel);
-  eco_config_option_list_del(config->cfg_screen, str_durations, sel);
-  eco_config_option_list_del(config->cfg_screen, str_randoms, sel);
-  /* eco_config_option_list_del(config->cfg_screen, str_options, sel); */
+  eco_config_option_list_del(cfg_screen, str_effects, sel);
+  eco_config_option_list_del(cfg_screen, str_matches, sel);
+  eco_config_option_list_del(cfg_screen, str_durations, sel);
+  eco_config_option_list_del(cfg_screen, str_randoms, sel);
+  /* eco_config_option_list_del(cfg_screen, str_options, sel); */
 }				
 
 /* Page creation functions */
@@ -215,7 +215,7 @@ eco_config_animation_page(void *data)
   e_widget_disabled_set(o_duration, 1);					\
   e_widget_frametable_object_append(ta, o_duration, 1, 0, 1, 1, 1, 0, 1, 0);
   
-  opt = eco_config_option_list_nth(config->cfg_screen, str_durations, 0);
+  opt = eco_config_option_list_nth(cfg_screen, str_durations, 0);
   if (opt)
     {      
       e_widget_slider_value_int_set(o_duration, opt->intValue);
@@ -224,7 +224,7 @@ eco_config_animation_page(void *data)
   ECO_PAGE_TABLE_END;
   
   ECO_PAGE_TABLE( _("Animation for selected match"));
-  opt = eco_config_option_list_nth(config->cfg_screen, str_effects, 0);
+  opt = eco_config_option_list_nth(cfg_screen, str_effects, 0);
   if (opt) effect = opt->intValue;
   group = e_widget_radio_group_new(&effect);
   for (i = 0; i < effect_cnt; i++)					
@@ -237,7 +237,7 @@ eco_config_animation_page(void *data)
   ECO_PAGE_TABLE_END;
   
   ECO_PAGE_TABLE( _("Animation random pool"));
-  opt = eco_config_option_get(config->cfg_screen, str_randoms); 
+  opt = eco_config_option_get(cfg_screen, str_randoms); 
 
   for (i = 0; i < effect_cnt; i++)  random_effect[i] = 0;
   

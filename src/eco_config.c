@@ -4,6 +4,7 @@
 static void *_create_data(E_Config_Dialog *cfd);
 static void  _fill_data(E_Config_Dialog_Data *cfdata);
 static void  _free_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata);
+static int   _close_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata);
 static int   _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata);
 static Evas_Object *_basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cfdata);
 
@@ -12,6 +13,12 @@ E_Config_Dialog_Data *dialog_data;
 static void (*_eco_apply_func)(E_Config_Dialog_Data *cfdata); //Pointer to the apply function to call
 static void (*_eco_cleanup_func)(void);
 Ecore_Timer *timer;
+
+Eet_Data_Descriptor *eco_edd_group;
+Eet_Data_Descriptor *eco_edd_option;
+Eet_Dictionary      *eco_edict;
+
+static void _eco_edd_config_init(void);
 
 //Match dialog objects
 Evas_Object *o_type_normal;
@@ -39,7 +46,10 @@ int _eco_type_tooltip;
 int _eco_type_notification;
 int _eco_type_toolbar;
 int _eco_type_unknown;
-
+   
+Eco_Group  *cfg_screen;
+Eco_Group  *cfg_display;
+Eco_Option *cfg_option;
 
 static Eet_File *eco_config_file = NULL;
 static char file_path[2048] = "";
@@ -51,7 +61,7 @@ eco_config_file_open()
   
   if (!eco_config_file)
     {
-      snprintf(file_path, 2048, "%s/%s", e_user_homedir_get(), ".ecomp/ecomp.eet");
+      snprintf(file_path, 2048, "%s/%s", e_user_homedir_get(), ".ecomp/ecomp.cfg");
       if (!ecore_file_exists(file_path))
 	{
 	  snprintf(file_path, 2048, "%s/%s", e_user_homedir_get(), ".ecomp/");
@@ -59,12 +69,12 @@ eco_config_file_open()
 
 	  char *file_src[] =
 	    {
-	      "/usr/local/share/ecomp/ecomp.eet",
-	      "/usr/share/ecomp/ecomp.eet",
-	      "/opt/e17/share/ecomp/ecomp.eet"
+	      "/usr/local/share/ecomp/ecomp.cfg",
+	      "/usr/share/ecomp/ecomp.cfg",
+	      "/opt/e17/share/ecomp/ecomp.cfg"
 	    };
 
-	  snprintf(file_path, 2048, "%s/%s", e_user_homedir_get(), ".ecomp/ecomp.eet");
+	  snprintf(file_path, 2048, "%s/%s", e_user_homedir_get(), ".ecomp/ecomp.cfg");
 	  if (ecore_file_exists(file_src[0]))
 	    ecore_file_cp(file_src[0], file_path);
 	  else if (ecore_file_exists(file_src[1]))
@@ -74,7 +84,10 @@ eco_config_file_open()
 	}
       
       if (ecore_file_exists(file_path))
-	eco_config_file = eet_open(file_path, EET_FILE_MODE_READ_WRITE);
+        {
+           _eco_edd_config_init();
+           eco_config_file = eet_open(file_path, EET_FILE_MODE_READ_WRITE);
+        }
     }
 
   printf("loaded %s %d\n", file_path, eco_config_file ? EINA_TRUE : EINA_FALSE);
@@ -105,28 +118,29 @@ eco_config_group_open(const char *group)
   
   if (eco_config_file)
     {
-      config->cfg_display = eet_data_read(eco_config_file, config->eco_edd_group, group_display);
-      config->cfg_screen  = eet_data_read(eco_config_file, config->eco_edd_group, group_screen);
+      cfg_display = eet_data_read(eco_config_file, eco_edd_group, group_display);
+      cfg_screen  = eet_data_read(eco_config_file, eco_edd_group, group_screen);
+      eco_edict   = eet_dictionary_get(eco_config_file);
     }
-  if (config->cfg_display)
+  if (cfg_display)
     {
-      printf("loaded %s:%d\n", group_display, config->cfg_display ? 1 : 0);
+      printf("loaded %s:%d\n", group_display, cfg_display ? 1 : 0);
     }
   else
     {
       printf("create %s\n", group_display);
-      config->cfg_display = calloc(1, sizeof(Eco_Group));
-      config->cfg_display->data = eina_hash_string_superfast_new(NULL);
+      cfg_display = calloc(1, sizeof(Eco_Group));
+      cfg_display->data = eina_hash_string_superfast_new(NULL);
     }
-  if (config->cfg_screen)
+  if (cfg_screen)
     {
-      printf("loaded %s:%d\n", group_screen, config->cfg_screen ? 1 : 0);      
+      printf("loaded %s:%d\n", group_screen, cfg_screen ? 1 : 0);      
     }
   else
     {
       printf("create %s\n", group_screen);
-      config->cfg_screen = calloc (1, sizeof(Eco_Group));
-      config->cfg_screen->data = eina_hash_string_superfast_new(NULL);
+      cfg_screen = calloc (1, sizeof(Eco_Group));
+      cfg_screen->data = eina_hash_string_superfast_new(NULL);
     }
 }
 
@@ -138,16 +152,13 @@ eco_config_group_apply(const char *group)
   snprintf(group_screen, 1024, "%s-screen0", group); 
   snprintf(group_display, 1024, "%s-allscreens", group); 
   printf("write %s - %s\n", group_screen, group_display);
-  
-  if (!eet_data_write(eco_config_file, config->eco_edd_group, group_display, config->cfg_display, 1))
+
+  if (!eet_data_write(eco_config_file, eco_edd_group, group_display, cfg_display, 1))
     fprintf(stderr, "Error writing data! - Display\n");
-  if (!eet_data_write(eco_config_file, config->eco_edd_group, group_screen, config->cfg_screen, 1))
+  if (!eet_data_write(eco_config_file, eco_edd_group, group_screen, cfg_screen, 1))
     fprintf(stderr, "Error writing data! - Screen\n");
 
-  int err = eet_close(eco_config_file);
-  printf("ERROR: %d\n", err);
-  
-  eco_config_file = eet_open(file_path, EET_FILE_MODE_READ_WRITE);
+  eet_sync(eco_config_file);
 }
 
 
@@ -157,16 +168,16 @@ _eco_free_group(const Eina_Hash *hash, const void *key, void *data, void *fdata)
   Eco_Option *opt = data;
   Eco_Option *item;
   
-  if (opt->stringValue) free (opt->stringValue);
+  if (opt->stringValue) eco_string_free(opt->stringValue);
   if (opt->listValue)
     {
       EINA_LIST_FREE(opt->listValue, item)
 	{
-	  if (item->stringValue) free (item->stringValue);
-	  free(item);
+	  if (item->stringValue) eco_string_free(item->stringValue);
+	  E_FREE(item);
 	}
     }
-  free(opt);
+  E_FREE(opt);
   return 1;
 }
 
@@ -174,20 +185,21 @@ EAPI void
 eco_config_group_close()
 {
   printf("close group\n");
-  
-  if (config->cfg_screen)
+  eet_sync(eco_config_file);
+
+  if (cfg_screen)
     {
-      if (config->cfg_screen->data)
-	eina_hash_foreach(config->cfg_screen->data,  _eco_free_group, NULL);
-      free(config->cfg_screen);
-      config->cfg_screen  = NULL;
+      if (cfg_screen->data)
+	eina_hash_foreach(cfg_screen->data,  _eco_free_group, NULL);
+      free(cfg_screen);
+      cfg_screen  = NULL;
     }
-  if (config->cfg_display)
+  if (cfg_display)
     {
-      if (config->cfg_display->data)
-	eina_hash_foreach(config->cfg_display->data, _eco_free_group, NULL);
-      free(config->cfg_display);
-      config->cfg_display = NULL;
+      if (cfg_display->data)
+	eina_hash_foreach(cfg_display->data, _eco_free_group, NULL);
+      free(cfg_display);
+      cfg_display = NULL;
     }
 }
 
@@ -229,13 +241,13 @@ eco_config_option_list_add(Eco_Group *group, const char *option)
 EAPI Eco_Option *
 eco_config_option_list_del(Eco_Group *group, const char *option, int num)
 {
-  Eco_Option *opt = eco_config_option_get(config->cfg_screen, option);
+  Eco_Option *opt = eco_config_option_get(cfg_screen, option);
   Eco_Option *item = eina_list_nth(opt->listValue, num);
   if (item)
     {
       opt->listValue = eina_list_remove(opt->listValue, item);
-      if (item->stringValue) free (item->stringValue);
-      free(item);
+      if (item->stringValue) eco_string_free(item->stringValue);
+      E_FREE(item);
     }
   return NULL;
 }
@@ -431,7 +443,7 @@ static void
 _eco_start_ecomorph(void *data, void *data2)
 {
    e_mod_run_ecomorph(eco_config_option_get(
-               config->cfg_display, "active_plugins")->listValue);
+               cfg_display, "active_plugins")->listValue);
 
 }
 
@@ -585,6 +597,7 @@ e_int_config_eco(E_Container *con, const char *params)
    if (!v) return NULL;
    v->create_cfdata = _create_data;
    v->free_cfdata = _free_data;
+   v->close_cfdata = _close_data;
    v->basic.apply_cfdata = _basic_apply_data;
    v->basic.create_widgets = _basic_create_widgets;
    
@@ -598,6 +611,15 @@ e_int_config_eco(E_Container *con, const char *params)
    e_dialog_resizable_set(cfd->dia, 1);
    
    return cfd;
+}
+
+static int 
+_close_data(E_Config_Dialog *cfd EINA_UNUSED, E_Config_Dialog_Data *cfdata EINA_UNUSED)
+{
+   DBG("CLOSE DATA!");
+   eet_sync(eco_config_file);
+   eet_close(eco_config_file);
+   return 1;
 }
 
 static void *
@@ -640,7 +662,7 @@ _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
    if (_eco_apply_func) _eco_apply_func(cfdata);
    e_config->use_composite = EINA_TRUE;
 
-   active = eina_list_clone(eco_config_option_get(config->cfg_display,
+   active = eina_list_clone(eco_config_option_get(cfg_display,
                "active_plugins")->listValue);
    
    EINA_LIST_FOREACH(active, l, opt)
@@ -650,7 +672,9 @@ _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
        snprintf(buf, 256, "%s %s", argv, opt->stringValue);
        argv = strdup(buf);
    }
-   config->base_plugins = eina_stringshare_add(argv);
+   if(strlen(argv) > 3)
+      config->base_plugins = eina_stringshare_add(argv);
+
    DBG("base_plugin:%s", config->base_plugins);
 
    e_config_save_queue();
@@ -714,3 +738,47 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    timer = ecore_timer_add(3, _eco_check_ecomorph, cfdata);
    return o;
 }
+
+static void
+_eco_edd_config_init(void)
+{
+   Eet_Data_Descriptor_Class eddc;
+
+   EET_EINA_STREAM_DATA_DESCRIPTOR_CLASS_SET(&eddc, Eco_Option);
+   eco_edd_option = eet_data_descriptor_stream_new(&eddc);
+
+   EET_EINA_STREAM_DATA_DESCRIPTOR_CLASS_SET(&eddc, Eco_Group);
+   eco_edd_group = eet_data_descriptor_stream_new(&eddc);
+
+   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "type", type, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "int", intValue, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "double", doubleValue, EET_T_DOUBLE);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(eco_edd_option, Eco_Option, "string", stringValue, EET_T_STRING);
+   EET_DATA_DESCRIPTOR_ADD_LIST (eco_edd_option, Eco_Option, "list", listValue, eco_edd_option);
+
+   EET_DATA_DESCRIPTOR_ADD_HASH (eco_edd_group,  Eco_Group, "options", data, eco_edd_option);
+}
+
+void
+eco_string_free(const char *str)
+{
+   if (!str)
+     return;
+
+   if ((eco_edict) && (eet_dictionary_string_check(eco_edict, str)))
+     return;
+
+   WRN("FREEING: %s", str);
+   eina_stringshare_del(str);
+} 
+
+void
+eco_string_add(void *data EINA_UNUSED, void *data2)
+{
+   Eco_Option *opt;
+   if(!(opt = data2)) return;
+   WRN("ADDING: %s", opt->edit_string);
+   opt->stringValue = eina_stringshare_add(opt->edit_string);
+}
+
+/* vim:set ts=8 sw=3 sts=3 expandtab cino=>5n-2f0^-2{2(0W1st0 :*/

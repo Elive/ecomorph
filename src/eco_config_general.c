@@ -75,7 +75,7 @@ _apply(E_Config_Dialog_Data *cfdata)
 
   EINA_LIST_FREE(opt_active_plugins->listValue, plugin)
     {
-      if (plugin->stringValue) free (plugin->stringValue);
+      if (plugin->stringValue) eco_string_free(plugin->stringValue);
       free(plugin);
     }
     
@@ -84,7 +84,7 @@ _apply(E_Config_Dialog_Data *cfdata)
       if (active_base[i])
 	{
 	  plugin = calloc (1, sizeof(Eco_Option));
-	  plugin->stringValue = strdup(plugin_base[i][0]);
+	  plugin->stringValue = eina_stringshare_add(plugin_base[i][0]);
 	  l = eina_list_append(l, plugin);
 	}
     }
@@ -93,7 +93,7 @@ _apply(E_Config_Dialog_Data *cfdata)
        if (active_viewport[i])
 	 {
 	    plugin = calloc (1, sizeof(Eco_Option));
-	    plugin->stringValue = strdup(plugin_viewport[i][0]);
+	    plugin->stringValue = eina_stringshare_add(plugin_viewport[i][0]);
 	    l = eina_list_append(l, plugin);
 	 }
     }
@@ -102,7 +102,7 @@ _apply(E_Config_Dialog_Data *cfdata)
        if (active_switcher[i])
 	 {
 	    plugin = calloc (1, sizeof(Eco_Option));
-	    plugin->stringValue = strdup(plugin_switcher[i][0]);
+	    plugin->stringValue = eina_stringshare_add(plugin_switcher[i][0]);
 	    l = eina_list_append(l, plugin);
 	 }
     }
@@ -111,7 +111,7 @@ _apply(E_Config_Dialog_Data *cfdata)
        if (active_other[i])
 	 {
 	    plugin = calloc (1, sizeof(Eco_Option));
-	    plugin->stringValue = strdup(plugin_other[i][0]);
+	    plugin->stringValue = eina_stringshare_add(plugin_other[i][0]);
 	    l = eina_list_append(l, plugin);
 	 }
     }
@@ -140,7 +140,7 @@ eco_config_general(void *data)
   ECO_PAGE_TABLE_END;
    
   Eco_Option *plugin;
-  opt_active_plugins = eco_config_option_get(config->cfg_display, "active_plugins");   
+  opt_active_plugins = eco_config_option_get(cfg_display, "active_plugins");   
 
   for (i = 0; i < NUM_BASE;     i++) active_base[i] = 0;
   for (i = 0; i < NUM_VIEWPORT; i++) active_viewport[i] = 0;

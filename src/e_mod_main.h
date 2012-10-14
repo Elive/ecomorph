@@ -70,23 +70,6 @@ extern int ecomorph_log;
 #include "eco_event.h"
 
 typedef struct _Config Config;
-typedef struct _Eco_Group Eco_Group;
-typedef struct _Eco_Option Eco_Option;
-
-struct _Eco_Group
-{
-    Eina_Hash *data;
-};
-
-struct _Eco_Option
-{
-    int type;
-
-    int intValue;
-    double doubleValue;
-    char *stringValue;
-    Eina_List *listValue;
-};
 
 struct _Config 
 {
@@ -102,14 +85,7 @@ struct _Config
    
    Eina_Bool cmd_plugins_override;
    Eina_Bool cmd_sh_ended;
-
-   Eco_Group  *cfg_screen;
-   Eco_Group  *cfg_display;
-   Eco_Option *cfg_option;
-
-   Eet_Data_Descriptor *eco_edd_group;
-   Eet_Data_Descriptor *eco_edd_option;
-
+ 
    Ecore_Exe *exe;
    Ecore_Timer *exe_t;
    Ecore_Event_Handler *eeh;

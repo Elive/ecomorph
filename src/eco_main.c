@@ -146,35 +146,7 @@ e_modapi_init(E_Module *m)
    config->edje_file = eina_stringshare_add(buf);
 
    maug = e_int_menus_menu_augmentation_add("config/1", _e_mod_menu_add, NULL, NULL, NULL);
-    
-   config->eco_edd_group = eet_data_descriptor_new
-     ("group", sizeof(Eco_Group),
-      NULL, NULL, NULL, NULL,
-      (void  (*) (void *, int (*) (void *, const char *, void *, void *), void *))eina_hash_foreach,
-      (void *(*) (void *, const char *, void *))eet_eina_hash_add,
-      (void  (*) (void *))eina_hash_free);
    
-   config->eco_edd_option = eet_data_descriptor_new
-     ("option", sizeof(Eco_Option),
-      (void *(*) (void *))eina_list_next,
-      (void *(*) (void *, void *)) eina_list_append,
-      (void *(*) (void *))eina_list_data_get,
-      (void *(*) (void *))eina_list_free,
-      NULL, NULL, NULL);
-
-   /* EET_EINA_STREAM_DATA_DESCRIPTOR_CLASS_SET(&eddc_option, Eco_Option);
-    * EET_EINA_STREAM_DATA_DESCRIPTOR_CLASS_SET(&eddc_group,  Eco_Group);
-    * eco_edd_option = eet_data_descriptor_stream_new(&eddc_option);
-    * eco_edd_group =  eet_data_descriptor_stream_new(&eddc_group); */
-   
-   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "type",	 type,	      EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "int",	 intValue,    EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "double",	 doubleValue, EET_T_DOUBLE);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(config->eco_edd_option, Eco_Option, "string",	 stringValue, EET_T_STRING);
-   EET_DATA_DESCRIPTOR_ADD_LIST (config->eco_edd_option, Eco_Option, "list",	 listValue,   config->eco_edd_option);
-
-   EET_DATA_DESCRIPTOR_ADD_HASH (config->eco_edd_group,  Eco_Group,  "options", data, config->eco_edd_option);
-
    ECOMORPH_ATOM_MANAGED = ecore_x_atom_get("__ECOMORPH_WINDOW_MANAGED");
    ECOMORPH_ATOM_PLUGIN  = ecore_x_atom_get("__ECOMORPH_PLUGIN");
 
