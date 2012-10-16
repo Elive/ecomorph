@@ -97,6 +97,7 @@ e_modapi_init(E_Module *m)
    char buf[PATH_MAX];
    const char *log_name = eina_stringshare_add("MOD:ECO");
 
+   ecore_exe_run("killall -9 ecomorph", NULL);
    ecomorph_log = eina_log_domain_register(log_name,EINA_COLOR_CYAN);
    eina_log_domain_level_set(log_name, EINA_LOG_LEVEL_DBG);
 
@@ -134,6 +135,7 @@ e_modapi_init(E_Module *m)
 
    if(!config) _config_new();
 
+   e_mod_run_ecomp_sh();
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
@@ -154,16 +156,13 @@ e_modapi_init(E_Module *m)
      (e_container_current_get(e_manager_current_get())->bg_win,
       ECORE_X_WINDOW_TYPE_DESKTOP);
 
-   ecore_exe_run("killall -9 ecomorph", NULL);
    INF("Initialized Ecomorph Module");
 
    conf_module = m;
    
-   e_mod_run_ecomp_sh();
-   
    e_module_priority_set(m,-1000);
    e_module_delayed_set(m, 0);
-
+   
    eco_actions_create();
    eco_event_init();
    e_config->desk_flip_animate_mode = -1;
