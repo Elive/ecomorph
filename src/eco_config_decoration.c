@@ -20,6 +20,10 @@ eco_config_decoration(void *data)
   ECO_CREATE_SLIDER_INT(-1,    shadow_x_offset, "Offset X", -16, 16, "%1.0f", 0, 2);
   ECO_CREATE_SLIDER_INT(-1,    shadow_y_offset, "Offset Y", -16, 16, "%1.0f", 0, 3);
   ECO_CREATE_ENTRY(-1, shadow_match, "Match Windows", 0, 4);
+
+  ECO_CREATE_SLIDER_INT(-1,    shadow_color_r, "R", 0, 255, "%1.0f", 0, 5);
+  ECO_CREATE_SLIDER_INT(-1,    shadow_color_g, "G", 0, 255, "%1.0f", 0, 6);
+  ECO_CREATE_SLIDER_INT(-1,    shadow_color_b, "B", 0, 255, "%1.0f", 0, 7);
   ECO_PAGE_TABLE_END;
   
   ECO_PAGE_TABLE("Second Shadow (e.g. Menus))");
@@ -28,6 +32,10 @@ eco_config_decoration(void *data)
   ECO_CREATE_SLIDER_INT(-1,    menu_shadow_x_offset, "Offset X", -16, 16, "%1.0f", 0, 2);
   ECO_CREATE_SLIDER_INT(-1,    menu_shadow_y_offset, "Offset Y", -16, 16, "%1.0f", 0, 3);
   ECO_CREATE_ENTRY(-1,         menu_shadow_match, "Match Windows", 0, 4);
+
+  ECO_CREATE_SLIDER_INT(-1,    menu_shadow_color_r, "R", 0, 255, "%1.0f", 0, 5);
+  ECO_CREATE_SLIDER_INT(-1,    menu_shadow_color_g, "G", 0, 255, "%1.0f", 0, 6);
+  ECO_CREATE_SLIDER_INT(-1,    menu_shadow_color_b, "B", 0, 255, "%1.0f", 0, 7);
   ECO_PAGE_TABLE_END;
 
   ECO_PAGE_END;
