@@ -135,7 +135,9 @@ e_modapi_init(E_Module *m)
 
    if(!config) _config_new();
 
-   e_mod_run_ecomp_sh();
+   if(e_mod_has_opengl() == EINA_TRUE)
+      e_mod_run_ecomp_sh();
+
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
@@ -242,6 +244,9 @@ _e_mod_menu_add(void *data, E_Menu *m)
 void
 e_mod_run_ecomorph()
 {
+   //dont start if OpenGL is missing!
+   if(e_mod_has_opengl() == EINA_FALSE) return;
+
    char buf[PATH_MAX];
    char *ecomorph[] = 
      {
@@ -454,6 +459,23 @@ e_mod_run_ecomp_sh()
    config->eeh = ecore_event_handler_add(ECORE_EXE_EVENT_DEL,
                                          _e_mod_event_del_handler_ecomp_sh, NULL);
    return;
+}
+
+Eina_Bool 
+e_mod_has_opengl()
+{
+   Ecore_Evas *ee;
+   Ecore_X_Window win;
+
+   ee = ecore_evas_gl_x11_options_new(NULL, win, 0, 0, 2, 2, ECORE_EVAS_GL_X11_OPT_NONE);
+   
+   if(!ee)
+     ee = ecore_evas_gl_x11_new(NULL, win, 0, 0, 2, 2);
+   
+   if(ee)
+     return EINA_TRUE;
+   
+   return EINA_FALSE;
 }
 
 /* vim:set ts=8 sw=3 sts=3 expandtab cino=>5n-2f0^-2{2(0W1st0 :*/

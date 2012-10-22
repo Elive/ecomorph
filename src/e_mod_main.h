@@ -102,6 +102,7 @@ EAPI int   e_modapi_save     (E_Module *m);
 extern Ecore_X_Atom ECOMORPH_ATOM_MANAGED;
 extern Ecore_X_Atom ECOMORPH_ATOM_PLUGIN;
 extern Config *config;
+Eina_Bool e_mod_has_opengl();
 
 void e_mod_run_ecomorph();
 #endif
