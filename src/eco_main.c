@@ -484,6 +484,10 @@ e_mod_has_opengl()
    if (strstr((const char *)renderer, "llvmpipe"))
      return EINA_FALSE;
 
+   //Disable ecomorph on AMD E-350 / Radeon HD 6310.
+   if (strstr((const char *)renderer, "AMD PALM"))
+      return EINA_FALSE;
+
    if(ee)
      return EINA_TRUE;
    
