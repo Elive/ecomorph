@@ -466,12 +466,24 @@ e_mod_has_opengl()
 {
    Ecore_Evas *ee;
    Ecore_X_Window win;
+   const GLubyte *renderer;
 
    ee = ecore_evas_gl_x11_options_new(NULL, win, 0, 0, 2, 2, ECORE_EVAS_GL_X11_OPT_NONE);
    
    if(!ee)
      ee = ecore_evas_gl_x11_new(NULL, win, 0, 0, 2, 2);
-   
+
+   renderer = glGetString(GL_RENDERER);
+   if (!renderer) renderer = (unsigned char *)"-UNKNOWN-";
+
+   DBG("Renderer:%s", renderer);
+
+   if (strstr((const char *)renderer, "softpipe"))
+     return EINA_FALSE;
+
+   if (strstr((const char *)renderer, "llvmpipe"))
+     return EINA_FALSE;
+
    if(ee)
      return EINA_TRUE;
    

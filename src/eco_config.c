@@ -668,6 +668,8 @@ _basic_apply_data(E_Config_Dialog *cfd, E_Config_Dialog_Data *cfdata)
    EINA_LIST_FOREACH(active, l, opt)
    {
        char buf[256];
+       //FIXED: adding decoration at command prompt causes ecomorph to segf
+       if(strcmp(opt->stringValue, "decoration") == 0) continue;
 
        snprintf(buf, 256, "%s %s", argv, opt->stringValue);
        argv = strdup(buf);

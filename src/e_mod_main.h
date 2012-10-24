@@ -1,4 +1,5 @@
 #include <e.h>
+#include <GL/gl.h>
 
 #ifndef E_MOD_MAIN_H
 #define E_MOD_MAIN_H

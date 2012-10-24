@@ -48,6 +48,14 @@ AC_SUBST(EDJE_CC)
 AC_MSG_CHECKING([Which edje_cc to use])
 AC_MSG_RESULT(${EDJE_CC})
 
+
+AC_MSG_RESULT($GL_CFLAGS)
+AC_MSG_CHECKING(for GL_LIBS)
+AC_ARG_WITH(gl-libs, [  --with-gl-libs=LIBS ],
+		     [GL_LIBS="$withval"],
+		     [GL_LIBS="-lGL"])
+AC_MSG_RESULT($GL_LIBS)
+
 datadir=$(pkg-config --variable=modules enlightenment)/${PACKAGE}
 AC_ARG_ENABLE(homedir-install,
   AS_HELP_STRING([--enable-homedir-install], [Install module in homedir]),
