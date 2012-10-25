@@ -554,6 +554,20 @@ e_mod_has_opengl()
         ERR("Missing: GL_ARB_texture_rectangle");
         return EINA_FALSE;
      }
+
+   if (!strstr((const char *)glext_server, "GLX_SGIX_fbconfig") || 
+       !strstr((const char *)glext_client, "GLX_SGIX_fbconfig") )
+     {
+        ERR("Missing: GLX_SGIX_fbconfig");
+        return EINA_FALSE;
+     }
+
+   if (!strstr((const char *)glext_server, "GLX_EXT_texture_from_pixmap") || 
+       !strstr((const char *)glext_client, "GLX_EXT_texture_from_pixmap") )
+     {
+        ERR("Missing: GLX_EXT_texture_from_pixmap");
+        return EINA_FALSE;
+     }
    
    //Disable ecomorph on AMD E-350 / Radeon HD 6310.
    if (strstr((const char *)renderer, "AMD PALM"))
