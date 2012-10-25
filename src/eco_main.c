@@ -20,9 +20,6 @@ Ecore_X_Atom ECOMORPH_ATOM_PLUGIN = 0;
 static E_Module *conf_module = NULL;
 static E_Int_Menu_Augmentation *maug = NULL;
 
-/* Eet_Data_Descriptor_Class eddc_option;
- * Eet_Data_Descriptor_Class eddc_group; */
-
 /* module setup */
 EAPI E_Module_Api e_modapi =
 {
@@ -135,9 +132,6 @@ e_modapi_init(E_Module *m)
 
    if(!config) _config_new();
 
-   if(e_mod_has_opengl() == EINA_TRUE)
-      e_mod_run_ecomp_sh();
-
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
@@ -162,13 +156,15 @@ e_modapi_init(E_Module *m)
 
    conf_module = m;
    
-   e_module_priority_set(m,-1000);
+   e_module_priority_set(m,0);
    e_module_delayed_set(m, 0);
    
    eco_actions_create();
    eco_event_init();
-   e_config->desk_flip_animate_mode = -1;
    
+   e_config->desk_flip_animate_mode = 0; //Was -1
+   
+   e_mod_run_ecomp_sh();
    return m;
 }
 
@@ -187,8 +183,10 @@ e_modapi_shutdown(E_Module *m)
 	maug = NULL;
      }
 
-   ecore_event_handler_del(config->eeh);
-   ecore_exe_kill(config->exe);
+   if(config->eeh)
+      ecore_event_handler_del(config->eeh);
+   if(config->exe)
+      ecore_exe_kill(config->exe);
 
    if(config->cmd)
       eina_stringshare_del(config->cmd);
@@ -244,7 +242,6 @@ _e_mod_menu_add(void *data, E_Menu *m)
 void
 e_mod_run_ecomorph()
 {
-   //dont start if OpenGL is missing!
    if(e_mod_has_opengl() == EINA_FALSE) return;
 
    char buf[PATH_MAX];
@@ -326,7 +323,9 @@ _e_mod_event_del_handler(void *data, int type, void *event)
                }*/
              WRN("This was my child, reloading ecomorph!");
 
-             ecore_event_handler_del(config->eeh);
+             if(config->eeh)
+                ecore_event_handler_del(config->eeh);
+             
              e_mod_run_ecomorph();
              config->cmd_retry++;
           }
@@ -464,34 +463,120 @@ e_mod_run_ecomp_sh()
 Eina_Bool 
 e_mod_has_opengl()
 {
+   const char *renderer, *glext, *glext_client, *glext_server;
+   int mtx = 0, scrnum;
+   char *dpyname;
    Ecore_Evas *ee;
-   Ecore_X_Window win;
-   const GLubyte *renderer;
+   Ecore_X_Display *dpy;
+   Ecore_X_Window_Attributes att;
 
-   ee = ecore_evas_gl_x11_options_new(NULL, win, 0, 0, 2, 2, ECORE_EVAS_GL_X11_OPT_NONE);
-   
-   if(!ee)
-     ee = ecore_evas_gl_x11_new(NULL, win, 0, 0, 2, 2);
+   if(!ecore_x_composite_query()) return EINA_FALSE;
+   if(!ecore_x_damage_query()) return EINA_FALSE;
 
-   renderer = glGetString(GL_RENDERER);
-   if (!renderer) renderer = (unsigned char *)"-UNKNOWN-";
+   memset((&att), 0, sizeof(Ecore_X_Window_Attributes));
+   ecore_x_window_attributes_get(ecore_x_window_root_first_get(), &att);
+   if((att.depth <= 8)) return EINA_FALSE;
 
+   ee = ecore_evas_gl_x11_new(NULL, ecore_x_window_root_first_get(), -64, -64, 32, 32);
+   if(ee)
+     {
+        dpy = ecore_x_display_get();
+        scrnum = ecore_x_screen_index_get(ecore_x_default_screen_get());
+
+        renderer = (const char *)glGetString(GL_RENDERER);
+        glext = (const char *)glGetString(GL_EXTENSIONS);
+        glext_server = (const char *)glXQueryServerString(dpy, scrnum, GLX_EXTENSIONS);
+        glext_client = (const char *)glXGetClientString(dpy, GLX_EXTENSIONS);
+        ecore_evas_free(ee);
+     }
+   else
+     {
+        ERR("NO OPENGL");
+        return EINA_FALSE;
+     }
+
+   if (!renderer)
+     {
+        ERR("Unable to get OpenGL Renderer");
+        return EINA_FALSE;
+     }
+
+   if (!glext||!glext_server||!glext_client)
+     {
+        ERR("Unable to get OpenGL Extensions");
+        return EINA_FALSE;
+     }
+  
+   DBG("Scrnum:%d", scrnum);
    DBG("Renderer:%s", renderer);
+   DBG("OpenGL Extensions:%s", glext);
+   DBG("OpenGL Server Extensions: %s", glext_server);
+   DBG("OpenGL Client Extensions: %s", glext_client);
+
 
    if (strstr((const char *)renderer, "softpipe"))
-     return EINA_FALSE;
+     {
+        CRI("Detected: softpipe");
+        return EINA_FALSE;
+     }
 
    if (strstr((const char *)renderer, "llvmpipe"))
-     return EINA_FALSE;
+     {
+        CRI("Detected: llvmpipe");
+        return EINA_FALSE;
+     }
 
+   if (!strstr((const char *)glext, "GL_ARB_texture_non_power_of_two"))
+     {
+        ERR("Missing: GL_ARB_texture_non_power_of_two");
+        return EINA_FALSE; 
+     }
+
+   if (!strstr((const char *)glext, "GL_NV_texture_rectangle"))
+     {
+        ERR("Missing: GL_NV_texture_rectangle");
+
+        //If Card is not AMD Radeon Return False!
+        if (!strstr((const char *)renderer, "AMD Radeon HD"))
+          {
+             return EINA_FALSE;
+          }
+     }
+
+   if (!strstr((const char *)glext, "GL_EXT_texture_rectangle"))
+     {
+        ERR("Missing: GL_EXT_texture_rectangle");
+        return EINA_FALSE;
+     }
+
+   if (!strstr((const char *)glext, "GL_ARB_texture_rectangle"))
+     {
+        ERR("Missing: GL_ARB_texture_rectangle");
+        return EINA_FALSE;
+     }
+   
    //Disable ecomorph on AMD E-350 / Radeon HD 6310.
    if (strstr((const char *)renderer, "AMD PALM"))
-      return EINA_FALSE;
-
-   if(ee)
-     return EINA_TRUE;
+     return EINA_FALSE;
    
-   return EINA_FALSE;
+   glGetIntegerv(GL_MAX_TEXTURE_SIZE, &mtx);
+   if(mtx > 1)
+     {
+        E_Manager *man;
+        Ecore_X_Randr_Screen_Size size;
+        
+        man = e_manager_current_get();
+        ecore_x_randr_screen_primary_output_current_size_get(man->root,
+                           &size.width,&size.height,NULL,NULL,0);
+        if((size.width > mtx) || (size.height > mtx))
+          {
+             ERR("Screen Larger than texture limit!!");
+             return EINA_FALSE;
+          }
+        DBG("Max Texture Size:%d", mtx);
+     }
+
+   return EINA_TRUE;
 }
 
 /* vim:set ts=8 sw=3 sts=3 expandtab cino=>5n-2f0^-2{2(0W1st0 :*/
