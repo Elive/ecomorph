@@ -460,12 +460,51 @@ e_mod_run_ecomp_sh()
    return;
 }
 
+Eina_Bool
+_e_mod_xvisual_get(Ecore_X_Display *dpy, int scrnum)
+{
+   XVisualInfo *visinfo;
+   int attribSingle[] = {
+        GLX_RGBA,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        None
+    };
+    int attribDouble[] = {
+        GLX_RGBA,
+        GLX_RED_SIZE, 1,
+        GLX_GREEN_SIZE, 1,
+        GLX_BLUE_SIZE, 1,
+        GLX_DOUBLEBUFFER,
+        None
+    };
+    visinfo = glXChooseVisual(dpy, scrnum, attribSingle);
+
+    if (!visinfo)
+       visinfo = glXChooseVisual(dpy, scrnum, attribDouble);
+
+#define VisualNoMask 0x0
+    if(visinfo == VisualNoMask)
+      {
+         XFree(visinfo);
+         return EINA_FALSE;
+      }
+#undef VisualNoMask
+
+    if(visinfo)
+       XFree(visinfo);
+
+    return EINA_TRUE;
+}
+    
+
+
 Eina_Bool 
 e_mod_has_opengl()
 {
    const char *renderer, *glext, *glext_client, *glext_server;
    int mtx = 0, scrnum;
-   char *dpyname;
    Ecore_Evas *ee;
    Ecore_X_Display *dpy;
    Ecore_X_Window_Attributes att;
@@ -477,16 +516,18 @@ e_mod_has_opengl()
    ecore_x_window_attributes_get(ecore_x_window_root_first_get(), &att);
    if((att.depth <= 8)) return EINA_FALSE;
 
+   dpy = ecore_x_display_get();
+   scrnum = ecore_x_screen_index_get(ecore_x_default_screen_get());
+   
+   if(!_e_mod_xvisual_get(dpy, scrnum)) return EINA_FALSE;
+
    ee = ecore_evas_gl_x11_new(NULL, ecore_x_window_root_first_get(), -64, -64, 32, 32);
    if(ee)
      {
-        dpy = ecore_x_display_get();
-        scrnum = ecore_x_screen_index_get(ecore_x_default_screen_get());
-
-        renderer = (const char *)glGetString(GL_RENDERER);
-        glext = (const char *)glGetString(GL_EXTENSIONS);
-        glext_server = (const char *)glXQueryServerString(dpy, scrnum, GLX_EXTENSIONS);
-        glext_client = (const char *)glXGetClientString(dpy, GLX_EXTENSIONS);
+        renderer = eina_stringshare_add(glGetString(GL_RENDERER));
+        glext = eina_stringshare_add(glGetString(GL_EXTENSIONS));
+        glext_server = eina_stringshare_add(glXQueryServerString(dpy, scrnum, GLX_EXTENSIONS));
+        glext_client = eina_stringshare_add(glXGetClientString(dpy, GLX_EXTENSIONS));
         ecore_evas_free(ee);
      }
    else
