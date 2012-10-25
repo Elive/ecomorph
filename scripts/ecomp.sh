@@ -29,7 +29,6 @@
 
 
 COMPIZ_NAME="ecomorph" # Final name for compiz (compiz.real)
-GLXINFO="glxinfo"
 # For Xgl LD_PRELOAD
 #LIBGL_NVIDIA="/usr/lib/nvidia/libGL.so.1.2.xlibmesa"
 #LIBGL_FGLRX="/usr/lib/fglrx/libGL.so.1.2.xlibmesa"
@@ -41,7 +40,7 @@ NVIDIA_MEMORY="65536" # 64MB
 NVIDIA_SETTINGS="nvidia-settings" # Assume it's in the path by default
 
 # For detecting what driver is in use, the + is for one or more /'s
-XORG_DRIVER_PATH="/usr/lib/xorg/modules/drivers/+"
+#XORG_DRIVER_PATH="/usr/lib/xorg/modules/drivers/+"
 
 # Driver whitelist
 WHITELIST="nvidia intel ati radeon i810 fglrx"
@@ -81,109 +80,6 @@ verbose()
 	fi
 }
 
-# Check if we have glxinfo tool available
-check_glxinfo()
-{
-   verbose "Checking for Glxinfo tool: "
-   if ! test -x "/usr/bin/$GLXINFO" ; then
-       if ! glxinfo 1>/dev/null 2>/dev/null ; then
-            verbose "Not present. Please install it first (package mesa-utils in debian)\n"
-           return 1;
-       fi
-   fi
-   verbose "present. \n"
-
-}
-
-# Check if we run with the Software Rasterizer, this happens e.g.
-# when a second screen session is opened via f-u-a on intel
-check_software_rasterizer()
-{
-	verbose "Checking for Software Rasterizer: "
-	if glxinfo 2> /dev/null | egrep -q '^OpenGL renderer string: Software Rasterizer' ; then
-		verbose "present. \n";
-		return 0;
-	else
-		verbose "Not present. \n"
-		return 1;
-	fi
-
-}
-
-# Check for non power of two texture support
-check_npot_texture()
-{
-	verbose "Checking for non power of two support: "
-	if glxinfo 2> /dev/null | egrep -q '(GL_ARB_texture_non_power_of_two|GL_NV_texture_rectangle|GL_EXT_texture_rectangle|GL_ARB_texture_rectangle)' ; then
-		verbose "present. \n";
-		return 0;
-	else
-		verbose "Not present. \n"
-		return 1;
-	fi
-
-}
-
-# Check for presence of FBConfig
-check_fbconfig()
-{
-	verbose "Checking for FBConfig: "
-	if [ "$INDIRECT" = "yes" ]; then
-		$GLXINFO -i | grep -q GLX.*fbconfig
-		FB=$?
-	else
-		$GLXINFO | grep -q GLX.*fbconfig
-		FB=$?
-	fi
-
-	if [ $FB = "0" ]; then
-		unset FB
-		verbose "present. \n"
-		return 0;
-	else
-		unset FB
-		verbose "not present. \n"
-		return 1;
-	fi
-}
-
-
-# Check for TFP
-check_tfp()
-{
-	verbose "Checking for texture_from_pixmap: "
-	if [ $($GLXINFO 2>/dev/null | grep -c GLX_EXT_texture_from_pixmap) -gt 2 ] ; then
-		verbose "present. \n"
-		return 0;
-	else
-		verbose "not present. \n"
-		if [ "$INDIRECT" = "yes" ]; then
-			unset LIBGL_ALWAYS_INDIRECT
-			INDIRECT="no"
-			return 1;
-		else
-			verbose "Trying again with indirect rendering:\n";
-			INDIRECT="yes"
-			export LIBGL_ALWAYS_INDIRECT=1
-			check_tfp;
-			return $?
-		fi
-	fi
-}
-
-# Check wether the composite extension is present
-check_composite()
-{
-	verbose "Checking for Composite extension: "
-	if xdpyinfo -queryExtensions | grep -q Composite ; then
-		verbose "present. \n";
-		return 0;
-	else
-		verbose "not present. \n";
-		return 1;
-	fi
-}
-
 # Check if the nVidia card has enough video ram to make sense
 check_nvidia_memory()
 {
@@ -215,27 +111,6 @@ check_nvidia()
 		NVIDIA_INTERNAL_TEST=1
 		return 1;
 	fi
-}
-
-# Check if the max texture size is large enough compared to the resolution
-check_texture_size()
-{
-	# Check how many screens we've got and iterate over them
-	N=$(xdpyinfo | grep -i "number of screens" | sed 's/.*[^0-9]//g')
-	for i in $(seq 1 $N); do
-	    verbose "Checking screen $i"
-	    TEXTURE_LIMIT=$(glxinfo -l | grep GL_MAX_TEXTURE_SIZE | sed -n "$i s/^.*=[^0-9]//g p")
-	    RESOLUTION=$(xdpyinfo | grep -i dimensions: | sed -n -e "$i s/^ *dimensions: *\([0-9]*x[0-9]*\) pixels.*/\1/ p")
-	    VRES=$(echo $RESOLUTION | sed 's/.*x//')
-	    HRES=$(echo $RESOLUTION | sed 's/x.*//')
-	    verbose "Comparing resolution ($RESOLUTION) to maximum 3D texture size ($TEXTURE_LIMIT): ";
-	    if [ $VRES -gt $TEXTURE_LIMIT ] || [ $HRES -gt $TEXTURE_LIMIT ]; then
-		verbose "Failed.\n"
-		return 1;
-	    fi
-	    verbose "Passed.\n"
-	done
-	return 0
 }
 
 # check driver whitelist
@@ -315,29 +190,7 @@ if [ "x$LIBGL_ALWAYS_INDIRECT" = "x1" ]; then
 	INDIRECT="yes";
 fi
 
-# if we run under Xgl, we can skip some tests here
-
-# if vesa or vga are in use, do not even try glxinfo (LP#119341)
-#if ! running_under_whitelisted_driver || have_blacklisted_pciid; then
-#    exit 1;
-#fi
-# check if we have the required bits to run compiz and if not,
-# fallback
-if ! check_glxinfo || ! check_tfp || ! check_npot_texture || ! check_composite || ! check_texture_size; then
-    exit 1;
-fi
-
-# check if we run with software rasterizer and if so, bail out
-if check_software_rasterizer; then
-    verbose "Software rasterizer detected, aborting"
-    exit 1;
-fi
-
 if check_nvidia && ! check_nvidia_memory; then
-    exit 1;
-fi
-
-if ! check_fbconfig; then
     exit 1;
 fi
 
