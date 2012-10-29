@@ -587,7 +587,12 @@ e_mod_has_opengl()
    if (!strstr((const char *)glext, "GL_EXT_texture_rectangle"))
      {
         ERR("Missing: GL_EXT_texture_rectangle");
-        return EINA_FALSE;
+        
+        //If Card is not Nvidia Return False!
+        if(!strstr((const char *)renderer, "GeForce"))
+          {
+             return EINA_FALSE;
+          }
      }
 
    if (!strstr((const char *)glext, "GL_ARB_texture_rectangle"))
