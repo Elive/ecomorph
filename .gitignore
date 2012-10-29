@@ -1,3 +1,14 @@
+# Can ignore specific files
+*.DS_Store
+# Use wildcards as well
+*~
+*.sw*
+*.out
+*.lock
+# debian build dirs
+debian
+# C EFL/Emodules files
+ABOUT-NLS
 Makefile
 Makefile.in
 aclocal.m4
@@ -10,9 +21,10 @@ config.rpath
 config.status
 config.sub
 configure
+configure.ac.orig
 depcomp
-e-module-ecomorph.edj
-e_modules-ecomorph.spec
+e-module-*.edj
+e_modules-*.spec
 install-sh
 libtool
 ltmain.sh
@@ -58,14 +70,40 @@ po/Makefile.in.in
 po/Makevars.template
 po/POTFILES
 po/Rules-quot
+po/ar.gmo
+po/bg.gmo
 po/boldquot.sed
+po/cs.gmo
+po/de.gmo
+po/el.gmo
 po/en@boldquot.header
 po/en@quot.header
+po/eo.gmo
+po/es.gmo
+po/fr.gmo
+po/he.gmo
+po/hr.gmo
+po/hu.gmo
 po/insert-header.sin
+po/it.gmo
+po/ja.gmo
+po/lt.gmo
+po/nl.gmo
+po/pl.gmo
+po/pt.gmo
+po/pt_BR.gmo
 po/quot.sed
 po/remove-potcdate.sed
 po/remove-potcdate.sin
+po/ru.gmo
+po/sk.gmo
+po/*.pot
+po/sl.gmo
 po/stamp-po
+po/sv.gmo
+po/tr.gmo
+po/uk.gmo
+po/zh_CN.gmo
 scripts/Makefile
 scripts/Makefile.in
 src/.deps/
