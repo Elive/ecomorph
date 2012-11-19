@@ -77,7 +77,8 @@ _cb_after_restart(void *data)
       _eco_message_send(bd->win, ECOMORPH_EVENT_DESK,
 			0, bd->desk->x, bd->desk->y, 0);
     }
-  
+
+  config->ready = EINA_TRUE;
   return EINA_FALSE;
 }
 
@@ -97,7 +98,7 @@ eco_event_init(void)
    handlers = eina_list_append(handlers, ecore_event_handler_add(E_EVENT_DESK_SHOW, _eco_cb_desk_show, NULL));
    handlers = eina_list_append(handlers, ecore_event_handler_add(E_EVENT_BORDER_FOCUS_IN, _eco_cb_border_focus, NULL));
    handlers = eina_list_append(handlers, ecore_event_handler_add(E_EVENT_BORDER_FOCUS_OUT, _eco_cb_border_focus, NULL));
-   
+  
    hooks = eina_list_append(hooks, e_border_hook_add(E_BORDER_HOOK_NEW_BORDER, _eco_border_cb_hook_new_border, NULL));
    hooks = eina_list_append(hooks, e_border_hook_add(E_BORDER_HOOK_EVAL_PRE_NEW_BORDER, _eco_border_cb_hook_pre_new_border, NULL));
    hooks = eina_list_append(hooks, e_border_hook_add(E_BORDER_HOOK_EVAL_POST_NEW_BORDER, _eco_border_cb_hook_post_new_border, NULL));

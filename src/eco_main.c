@@ -88,6 +88,16 @@ _config_new(void)
    e_config_save_queue();
 }
 
+Eina_Bool ecomorph_ready(void *data)
+{
+   if(config->ready)
+     {
+        e_mod_run_ecomp_sh();
+        return ECORE_CALLBACK_DONE;
+     }
+   return ECORE_CALLBACK_RENEW;
+}
+
 EAPI void *
 e_modapi_init(E_Module *m)
 {
@@ -162,9 +172,10 @@ e_modapi_init(E_Module *m)
    eco_actions_create();
    eco_event_init();
    
-   e_config->desk_flip_animate_mode = 0; //Was -1
-   
-   e_mod_run_ecomp_sh();
+   e_config->desk_flip_animate_mode = 0; //FIXME: this was -1
+  
+   ecore_idler_add(ecomorph_ready, NULL); 
+
    return m;
 }
 

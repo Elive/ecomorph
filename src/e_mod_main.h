@@ -93,6 +93,8 @@ struct _Config
    Ecore_Event_Handler *eeh;
    pid_t exe_pid;
    int cmd_retry;
+
+   Eina_Bool ready;
 };
 
 EAPI extern E_Module_Api e_modapi;
