@@ -34,7 +34,7 @@ AC_SUBST(MODULE_ARCH)
 AC_DEFINE_UNQUOTED(MODULE_ARCH, "$MODULE_ARCH", "Module architecture")
 
 # Find edje_cc
-PKG_CHECK_MODULES(EDJE, [edje >= 1.7.99])
+PKG_CHECK_MODULES(EDJE, [edje >= 1.7.3])
 AC_ARG_WITH(edje-cc,
   AC_HELP_STRING([--with-edje-cc=PATH], [specify a specific path to edje_cc]),
   [
