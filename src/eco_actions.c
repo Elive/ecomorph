@@ -620,8 +620,8 @@ eco_actions_create(void)
    ECO_ACTION_NEW("Eco_Shift_Prev_All", "Ecomorph", "Shift Prev All", SHIFT_PREV_ALL);
 
    // Rotate Cube
-   /* ECO_ACTION_NEW("Eco_Rotate_Initiate", "Ecomorph", "Rotate Cube", ROTATE_INITIATE);
-    * ECO_ACTION_NEW("Eco_Rotate_Initiate_Toggle", "Ecomorph", "Rotate Cube Toggle", ROTATE_INITIATE_TOGGLE); */
+    ECO_ACTION_NEW("Eco_Rotate_Initiate", "Ecomorph", "Rotate Cube", ROTATE_INITIATE);
+    ECO_ACTION_NEW("Eco_Rotate_Initiate_Toggle", "Ecomorph", "Rotate Cube Toggle", ROTATE_INITIATE_TOGGLE); 
 
    ECO_ACTION_NEW("Eco_Opacity_Increase", "Ecomorph", "Increase Window Opacity", OPACITY_INCREASE);
    ECO_ACTION_NEW("Eco_Opacity_Decrease", "Ecomorph", "Decrease Window Opacity", OPACITY_DECREASE);
@@ -673,8 +673,8 @@ eco_actions_free(void)
    ECO_ACTION_FREE("Eco_Shift_Prev_All", "Ecomorph", "Shift Prev All");
    
    // Rotate Cube
-   /* ECO_ACTION_FREE("Eco_Rotate_Initiate", "Ecomorph", "Rotate Cube");
-    * ECO_ACTION_FREE("Eco_Rotate_Initiate_Toggle", "Ecomorph", "Rotate Cube Toggle"); */
+    ECO_ACTION_FREE("Eco_Rotate_Initiate", "Ecomorph", "Rotate Cube");
+    ECO_ACTION_FREE("Eco_Rotate_Initiate_Toggle", "Ecomorph", "Rotate Cube Toggle"); 
 
    ECO_ACTION_FREE("Eco_Opacity_Increase", "Ecomorph", "Increase Window Opacity");
    ECO_ACTION_FREE("Eco_Opacity_Decrease", "Ecomorph", "Decrease Window Opacity");
