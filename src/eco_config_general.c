@@ -59,7 +59,7 @@ static char *plugin_other[NUM_OTHER][2] =
     {"mblur",      "Motion Blur"},
     {"wobbly",     "Wobbly (experimental)"},   
     {"cubereflex", "Cube Reflexions"},
-    {"thumbnail",  "Itask-NG Thumbnails"}
+    {"thumbnail",  "Engage Thumbnails"}
   };
 
 #define NUM_FILTER 3
