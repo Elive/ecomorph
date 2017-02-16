@@ -58,7 +58,8 @@ AC_MSG_RESULT($GL_LIBS)
 datadir=$(pkg-config --variable=modules enlightenment)/${PACKAGE}
 AC_ARG_ENABLE(homedir-install,
   AS_HELP_STRING([--enable-homedir-install], [Install module in homedir]),
-  [ datadir="${HOME}/.e/e/modules/${PACKAGE}" ]
+  #[ datadir="${HOME}/.e/e/modules/${PACKAGE}" ]
+  [ datadir="${HOME}/.e/e17/modules/${PACKAGE}" ]
 )
 
 #scriptdir=$(pkg-config --variable=prefix enlightenment)
