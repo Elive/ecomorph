@@ -177,7 +177,7 @@ eco_event_shutdown(void)
    EINA_LIST_FREE (hooks, hook)
      e_border_hook_del(hook);
 
-   if (restart && evil)
+   if (restart)
      _eco_message_root_send(ECOMORPH_ATOM_MANAGED,
 			    ECOMORPH_EVENT_RESTART,
 			    0, 1, 0, 0);
