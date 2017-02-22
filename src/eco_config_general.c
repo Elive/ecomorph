@@ -57,7 +57,7 @@ static char *plugin_other[NUM_OTHER][2] =
     {"zoom",       "Zoom (experimental)"},
     {"blur",       "Blur Windows"},
     {"mblur",      "Motion Blur"},
-    {"wobbly",     "Wobbly (experimental)"},   
+    {"wobbly",     "Wobbly"},
     {"cubereflex", "Cube Reflexions"},
     {"thumbnail",  "Engage Thumbnails"}
   };
