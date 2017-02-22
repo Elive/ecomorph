@@ -172,7 +172,7 @@ e_modapi_init(E_Module *m)
    eco_actions_create();
    eco_event_init();
    
-   e_config->desk_flip_animate_mode = 0; //FIXME: this was -1
+   e_config->desk_flip_animate_mode = -1; //FIXME: this was -1
   
    ecore_idler_add(ecomorph_ready, NULL); 
 
