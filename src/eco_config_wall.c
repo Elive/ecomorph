@@ -18,7 +18,7 @@ eco_config_wall(void *data)
   ECO_CREATE_CHECKBOX(-1, miniscreen, "Show live previews", 0, 1);
   ECO_CREATE_CHECKBOX(-1, move_background, "Move background and popup", 0, 2);
   ECO_CREATE_SLIDER_DOUBLE(-1, preview_timeout, "Viewport switcher duration", 0.0, 2.0, "%1.2f sec", 0, 3);
-  ECO_CREATE_SLIDER_DOUBLE(-1, slide_duration, "Wall sliding duration", 0.1, 5.0, "%1.2f sec", 0, 4);
+  ECO_CREATE_SLIDER_DOUBLE(-1, slide_duration, "Wall sliding duration", 0.0, 2.0, "%1.2f sec", 0, 4);
   ECO_PAGE_TABLE_END;
   ECO_PAGE_END;
 }
