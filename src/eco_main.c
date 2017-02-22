@@ -205,7 +205,7 @@ e_modapi_shutdown(E_Module *m)
    eco_actions_free();
    eco_event_shutdown();
 
-   e_config->desk_flip_animate_mode = 0;
+   e_config->desk_flip_animate_mode = 1;
 
 
    if(config->dropshadow == 1)
