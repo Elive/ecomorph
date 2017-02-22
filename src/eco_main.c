@@ -172,7 +172,13 @@ e_modapi_init(E_Module *m)
    eco_actions_create();
    eco_event_init();
    
-   e_config->desk_flip_animate_mode = -1; //FIXME: this was -1
+   e_config->desk_flip_animate_mode = -1; // XXX note: if is not set to -1, the switching between desktops would act strangely (windows creating/destroying visually while switching, someones dissappears, etc)
+   // FIXME Temporal hack: lock fails if ecomorph is running (not in bodhi, so maybe is because the version of PAM)
+   e_config->desklock_on_suspend = 0;
+   e_config->desklock_start_locked = 0;
+   e_config->desklock_autolock_screensaver = 0;
+   e_config->desklock_autolock_idle = 0;
+
   
    ecore_idler_add(ecomorph_ready, NULL); 
 
@@ -205,7 +211,9 @@ e_modapi_shutdown(E_Module *m)
    eco_actions_free();
    eco_event_shutdown();
 
+   // FIXME: Temporal hack: set statically the desired values... we should remember the user's selections at least
    e_config->desk_flip_animate_mode = 1;
+   e_config->desklock_on_suspend = 1;
 
 
    if(config->dropshadow == 1)
