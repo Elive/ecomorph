@@ -14,8 +14,8 @@ eco_config_rotate(void *data)
    ECO_PAGE_BEGIN("rotate");
    ECO_PAGE_TABLE("Options");
 
-   ECO_CREATE_SLIDER_DOUBLE(0, speed, "Rotation speed", 0.1, 50.0, "%1.1f", 0, 0);
-   ECO_CREATE_SLIDER_DOUBLE(0, acceleration, "Rotation acceleration", 1.0, 20.0, "%1.1f", 0, 1);
+   ECO_CREATE_SLIDER_DOUBLE(0, speed, "Rotation speed", 0.1, 20.0, "%1.1f", 0, 0);
+   ECO_CREATE_SLIDER_DOUBLE(0, acceleration, "Rotation acceleration", 1.0, 8.0, "%1.1f", 0, 1);
    ECO_CREATE_SLIDER_DOUBLE(0, timestep, "Rotation timestep", 0.1, 50.0, "%1.1f", 0, 2);
    ECO_CREATE_SLIDER_DOUBLE(0, zoom, "Rotation zoom", 0.0, 2.0, "%1.1f", 0, 3);
 
