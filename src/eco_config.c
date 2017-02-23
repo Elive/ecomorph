@@ -554,7 +554,7 @@ eco_list_populate(Evas_Object *list)
    e_widget_ilist_append(list, ico, _("Cube"), eco_config_cube, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, config->edje_file, "icon_cube");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_cube_rotate");
    e_widget_ilist_append(list, ico, _("Cube Rotate"), eco_config_rotate, dialog_data, NULL);
 
    //Effects
@@ -573,7 +573,7 @@ eco_list_populate(Evas_Object *list)
    e_widget_ilist_append(list, ico, _("Blur effect"), eco_config_blur, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, config->edje_file, "icon_blur");
+   e_icon_file_edje_set(ico, config->edje_file, "icon_mblur");
    e_widget_ilist_append(list, ico, _("Motion Blur"), eco_config_mblur, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
@@ -581,8 +581,8 @@ eco_list_populate(Evas_Object *list)
    e_widget_ilist_append(list, ico, _("Thumbnail"), eco_config_thumbnail, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
-   e_icon_file_edje_set(ico, config->edje_file, "icon_cube");
-   e_widget_ilist_append(list, ico, _("Cube Reflexions"), eco_config_cubereflex, dialog_data, NULL);
+   e_icon_file_edje_set(ico, config->edje_file, "icon_cube_reflections");
+   e_widget_ilist_append(list, ico, _("Cube Reflections"), eco_config_cubereflex, dialog_data, NULL);
 
 }
 ////////////////////////////////////////////////////////////////////////////////

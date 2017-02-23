@@ -10,6 +10,11 @@ images {
    image: "icon_shift.png" COMP;
    image: "icon_animation.png" COMP;
    image: "icon_thumbnail.png" COMP;
+   image: "icon_cube.png" COMP;
+   image: "icon_cube_reflections.png" COMP;
+   image: "icon_cube_rotate.png" COMP;
+   image: "icon_blur.png" COMP;
+   image: "icon_mblur.png" COMP;
 }
 #define ICON(NAME,ICON) \
    group { name: NAME; \
