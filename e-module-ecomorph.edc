@@ -42,4 +42,9 @@ collections {
    ICON("icon_shift", "icon_shift.png")
    ICON("icon_animation", "icon_animation.png")
    ICON("icon_thumbnail", "icon_thumbnail.png")
+   ICON("icon_cube", "icon_cube.png")
+   ICON("icon_cube_reflections", "icon_cube_reflections.png")
+   ICON("icon_cube_rotate", "icon_cube_rotate.png")
+   ICON("icon_blur", "icon_blur.png")
+   ICON("icon_mblur", "icon_mblur.png")
 }
