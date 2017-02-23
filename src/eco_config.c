@@ -520,7 +520,7 @@ eco_list_populate(Evas_Object *list)
 
    ico = e_icon_add(dialog_data->evas);
    e_icon_file_edje_set(ico, config->edje_file, "icon_scale");
-   e_widget_ilist_append(list, ico, _("Scale 'Exposè' effect"), eco_config_scale, dialog_data, NULL);
+   e_widget_ilist_append(list, ico, _("Scale 'Exposé' effect"), eco_config_scale, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
    e_icon_file_edje_set(ico, config->edje_file, "icon_scale");
@@ -543,7 +543,7 @@ eco_list_populate(Evas_Object *list)
 
    ico = e_icon_add(dialog_data->evas);
    e_icon_file_edje_set(ico, config->edje_file, "icon_expo");
-   e_widget_ilist_append(list, ico, _("Expo wall"), eco_config_expo, dialog_data, NULL);
+   e_widget_ilist_append(list, ico, _("Exposé"), eco_config_expo, dialog_data, NULL);
 
    ico = e_icon_add(dialog_data->evas);
    e_icon_file_edje_set(ico, config->edje_file, "icon_wall");
