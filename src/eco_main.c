@@ -82,8 +82,8 @@ _config_new(void)
    config = E_NEW(Config, 1);
 
    config->dropshadow = config_module_enable_get(DROPSHADOW);
-   config->compscale = config_module_enable_get(COMPOSITE);
-   config->composite = config_module_enable_get(COMPSCALE);
+   config->compscale = config_module_enable_get(COMPSCALE);
+   config->composite = config_module_enable_get(COMPOSITE);
    config->base_plugins = eina_stringshare_add("ini inotify");
    e_config_save_queue();
 }
@@ -135,8 +135,8 @@ e_modapi_init(E_Module *m)
    if(config)
      {
         config->dropshadow = config_module_enable_get(DROPSHADOW);
-        config->compscale = config_module_enable_get(COMPOSITE);
-        config->composite = config_module_enable_get(COMPSCALE);
+        config->compscale = config_module_enable_get(COMPSCALE);
+        config->composite = config_module_enable_get(COMPOSITE);
         e_config_save_queue();
      }
 
@@ -219,12 +219,12 @@ e_modapi_shutdown(E_Module *m)
    if(config->dropshadow == 1)
      config_module_load_set(DROPSHADOW);
 
+   if(config->compscale == 1)
+     config_module_load_set(COMPSCALE);
+
    if(config->composite == 1)
      config_module_load_set(COMPOSITE);
 
-   if(config->compscale == 1)
-     config_module_load_set(COMPSCALE);
-   
    E_FREE(config);
    config = NULL;
    conf_module = NULL;
