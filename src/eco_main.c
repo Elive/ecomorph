@@ -191,6 +191,7 @@ EAPI int
 e_modapi_shutdown(E_Module *m)
 {
    E_Config_Dialog *cfd;
+
    while ((cfd = e_config_dialog_get("E", "appearance/eco"))) e_object_del(E_OBJECT(cfd));
    e_configure_registry_item_del("appearance/eco");
    e_configure_registry_category_del("appearance");
@@ -217,7 +218,6 @@ e_modapi_shutdown(E_Module *m)
    e_config->desk_flip_animate_mode = 1;
    /*e_config->desklock_on_suspend = 1;*/
 
-
    if(config->dropshadow == 1)
      config_module_load_set(DROPSHADOW);
 
@@ -225,7 +225,20 @@ e_modapi_shutdown(E_Module *m)
      config_module_load_set(COMPSCALE);
 
    if(config->composite == 1)
-     config_module_load_set(COMPOSITE);
+     {
+        // make sure that we have a delay when unloading the module before to load the new compositor (ecomorph fully closed)
+        usleep(500000);
+        config_module_load_set(COMPOSITE);
+     }
+
+   /* Update desktop */
+   E_Container *con = e_container_current_get(e_manager_current_get());
+   E_Zone *zone;
+   zone = e_zone_current_get(con);
+   e_desk_next(zone);
+   zone = e_zone_current_get(con);
+   // desktop needs to be switched back after the module has been unloaded
+   ecore_timer_add(0.7, e_desk_prev, zone);
 
    E_FREE(config);
    config = NULL;
