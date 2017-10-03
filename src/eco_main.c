@@ -145,11 +145,11 @@ e_modapi_init(E_Module *m)
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
-   if(config_module_enable_get(COMPOSITE) == TRUE)
-     config_module_unload_set(COMPOSITE);
-
    if(config_module_enable_get(COMPSCALE) == TRUE)
      config_module_unload_set(COMPSCALE);
+
+   if(config_module_enable_get(COMPOSITE) == TRUE)
+     config_module_unload_set(COMPOSITE);
 
    config->edje_file = eina_stringshare_add(buf);
 
@@ -173,11 +173,13 @@ e_modapi_init(E_Module *m)
    eco_event_init();
    
    e_config->desk_flip_animate_mode = -1; // XXX note: if is not set to -1, the switching between desktops would act strangely (windows creating/destroying visually while switching, someones dissappears, etc)
-   // FIXME Temporal hack: lock fails if ecomorph is running (not in bodhi, so maybe is because the version of PAM)
-   e_config->desklock_on_suspend = 0;
-   e_config->desklock_start_locked = 0;
-   e_config->desklock_autolock_screensaver = 0;
-   e_config->desklock_autolock_idle = 0;
+   //
+   // Temporal hack: lock fails if ecomorph is running (not in bodhi, so maybe is because the version of PAM)
+   // UPdate: this one seems to be fixed by restarting ecomorph when prompting the passwd
+   /*e_config->desklock_on_suspend = 0;*/ 
+   /*e_config->desklock_start_locked = 0;*/
+   /*e_config->desklock_autolock_screensaver = 0;*/
+   /*e_config->desklock_autolock_idle = 0;*/
 
   
    ecore_idler_add(ecomorph_ready, NULL); 
@@ -213,7 +215,7 @@ e_modapi_shutdown(E_Module *m)
 
    // FIXME: Temporal hack: set statically the desired values... we should remember the user's selections at least
    e_config->desk_flip_animate_mode = 1;
-   e_config->desklock_on_suspend = 1;
+   /*e_config->desklock_on_suspend = 1;*/
 
 
    if(config->dropshadow == 1)
