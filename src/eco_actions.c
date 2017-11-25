@@ -594,6 +594,7 @@ eco_actions_create(void)
    /* ECO_ACTION_NEW("Eco_Water_Touch", "Ecomorph", "Water Touch", "0 water initiate"); */
    ECO_ACTION_NEW("Eco_Water_Rain", "Ecomorph", "Water Toggle Rain", WATER_INITIATE);
    /* ECO_ACTION_NEW("Eco_Water_Title_Wave", "Ecomorph", "Water Title Wave", "1 water title_wave"); */
+   ECO_ACTION_NEW("Eco_Zoom_Toggle", "Ecomorph", "Zoom Toggle", ZOOM_INITIATE);
 
    // Scale
    ECO_ACTION_NEW("Eco_Scale_Initiate", "Ecomorph", "Scale Initiate", SCALE_INITIATE);
@@ -646,6 +647,7 @@ eco_actions_free(void)
    // Water
    /* ECO_ACTION_FREE("Eco_Water_Touch", "Ecomorph", "Water Touch"); */
    ECO_ACTION_FREE("Eco_Water_Rain", "Ecomorph", "Water Toggle Rain");
+   ECO_ACTION_FREE("Eco_Zoom_Toggle", "Ecomorph", "Zoom Toggle");
    /* ECO_ACTION_FREE("Eco_Water_Title_Wave", "Ecomorph", "Water Title Wave"); */
 
    // Scale
