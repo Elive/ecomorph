@@ -167,7 +167,8 @@ e_modapi_init(E_Module *m)
    conf_module = m;
    
    e_module_priority_set(m,0);
-   e_module_delayed_set(m, 0);
+   // set the module delayed by default, so we normally want to have E the most fully-loaded possible before to start the ecomorph layer
+   e_module_delayed_set(m, 1);
    
    eco_actions_create();
    eco_event_init();
