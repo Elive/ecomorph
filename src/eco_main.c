@@ -92,8 +92,7 @@ Eina_Bool ecomorph_ready(void *data)
 {
    if(config->ready)
      {
-        /*e_mod_run_ecomp_sh();*/
-        e_mod_run_ecomorph();
+        e_mod_run_ecomp_sh();
         return ECORE_CALLBACK_DONE;
      }
    return ECORE_CALLBACK_RENEW;
