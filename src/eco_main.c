@@ -229,7 +229,7 @@ e_modapi_shutdown(E_Module *m)
    if(config->composite == 1)
      {
         // make sure that we have a delay when unloading the module before to load the new compositor (ecomorph fully closed)
-        usleep(500000);
+        usleep(800000);
         config_module_load_set(COMPOSITE);
      }
 
@@ -240,12 +240,11 @@ e_modapi_shutdown(E_Module *m)
    zone = e_zone_current_get(con);
    desk = e_desk_current_get(zone);
 
-   e_desk_show(desk);
-   /*e_desk_next(zone);*/
+   e_desk_next(zone);
    /*zone = e_zone_current_get(con);*/
-      /*usleep(700000);*/
+   // this not works:
    /*e_desk_prev(zone);*/
-   // desktop needs to be switched back after the module has been unloaded: XXX note: doesn't works, it runs in a loop
+   // desktop needs to be switched back after the module has been unloaded: XXX note: doesn't works, it continues running in a loop
    /*ecore_timer_add(0.7, e_desk_prev, zone);*/
 
    E_FREE(config);
