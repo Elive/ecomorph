@@ -236,13 +236,16 @@ e_modapi_shutdown(E_Module *m)
    /* Update desktop */
    E_Container *con = e_container_current_get(e_manager_current_get());
    E_Zone *zone;
+   E_Desk *desk;
    zone = e_zone_current_get(con);
-   e_desk_next(zone);
+   desk = e_desk_current_get(zone);
 
-   zone = e_zone_current_get(con);
-   usleep(700000);
-   e_desk_prev(zone);
-   // desktop needs to be switched back after the module has been unloaded
+   e_desk_show(desk);
+   /*e_desk_next(zone);*/
+   /*zone = e_zone_current_get(con);*/
+      /*usleep(700000);*/
+   /*e_desk_prev(zone);*/
+   // desktop needs to be switched back after the module has been unloaded: XXX note: doesn't works, it runs in a loop
    /*ecore_timer_add(0.7, e_desk_prev, zone);*/
 
    E_FREE(config);
