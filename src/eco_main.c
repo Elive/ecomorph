@@ -238,9 +238,12 @@ e_modapi_shutdown(E_Module *m)
    E_Zone *zone;
    zone = e_zone_current_get(con);
    e_desk_next(zone);
+
    zone = e_zone_current_get(con);
+   usleep(700000);
+   e_desk_prev(zone);
    // desktop needs to be switched back after the module has been unloaded
-   ecore_timer_add(0.7, e_desk_prev, zone);
+   /*ecore_timer_add(0.7, e_desk_prev, zone);*/
 
    E_FREE(config);
    config = NULL;
