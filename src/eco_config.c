@@ -697,13 +697,13 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
       
    of = e_widget_frametable_add(evas, _("Ecomorph"), 0);
   
-   ob = e_widget_button_add(evas, _("Start"), NULL,
+   ob = e_widget_button_add(evas, _("Start Ecomorph"), NULL,
                             _eco_start_ecomorph, NULL, NULL);
    e_widget_frametable_object_append(of, ob, 0, 1, 1, 1, 1, 0, 0, 0);
    e_widget_disabled_set(ob, 1);
    cfdata->o_start = ob;
    
-   ob = e_widget_button_add(evas, _("Stop"), NULL,
+   ob = e_widget_button_add(evas, _("Stop Ecomorph"), NULL,
                             _eco_stop_ecomorph, NULL, NULL);
    e_widget_frametable_object_append(of, ob, 1, 1, 1, 1, 1, 0, 0, 0);
    e_widget_disabled_set(ob, 1);
