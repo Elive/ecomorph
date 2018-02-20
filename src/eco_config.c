@@ -737,7 +737,7 @@ _basic_create_widgets(E_Config_Dialog *cfd, Evas *evas, E_Config_Dialog_Data *cf
    
    //Check if ecomorph is running and run the timer
    _eco_check_ecomorph(cfdata);
-   timer = ecore_timer_add(3, _eco_check_ecomorph, cfdata);
+   timer = ecore_timer_add(5, _eco_check_ecomorph, cfdata);
    return o;
 }
 
