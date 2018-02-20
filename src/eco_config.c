@@ -425,7 +425,7 @@ _eco_check_ecomorph(void *data)
 {
    E_Config_Dialog_Data *cfdata = data;
 
-   if (system("pidof ecomorph"))
+   if (system("pidof ecomorph 1>/dev/null"))
    {
       e_widget_disabled_set(cfdata->o_stop, EINA_TRUE);
       e_widget_disabled_set(cfdata->o_start, EINA_FALSE);
