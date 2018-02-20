@@ -229,18 +229,20 @@ e_modapi_shutdown(E_Module *m)
    if(config->composite == 1)
      {
         // make sure that we have a delay when unloading the module before to load the new compositor (ecomorph fully closed)
-        usleep(800000);
+        while (system("pidof ecomorph 1>/dev/null"))
+           usleep(100000);
+
         config_module_load_set(COMPOSITE);
      }
 
    /* Update desktop */
-   E_Container *con = e_container_current_get(e_manager_current_get());
-   E_Zone *zone;
-   E_Desk *desk;
-   zone = e_zone_current_get(con);
-   desk = e_desk_current_get(zone);
+   /*E_Container *con = e_container_current_get(e_manager_current_get());*/
+   /*E_Zone *zone;*/
+   /*E_Desk *desk;*/
+   /*zone = e_zone_current_get(con);*/
+   /*desk = e_desk_current_get(zone);*/
 
-   e_desk_next(zone);
+   /*e_desk_next(zone);*/
    /*zone = e_zone_current_get(con);*/
    // this not works:
    /*e_desk_prev(zone);*/
