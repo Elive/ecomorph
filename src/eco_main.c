@@ -302,10 +302,11 @@ e_mod_run_ecomorph()
              if(!config->cmd_options)
                 config->cmd_options = eina_stringshare_add("");
 
-             if(!config->cmd_plugins_override)
+               // update: we don't use cmd_plugins and also doesn't seems to be needed (plugins works with the "ini inotify" options only)
+             /*if(!config->cmd_plugins_override)*/
                 snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->base_plugins);
-             else
-                snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->cmd_plugins);
+             /*else*/
+                /*snprintf(buf, sizeof(buf), "%s %s %s", ecomorph[i], config->cmd_options, config->cmd_plugins);*/
 
              config->cmd = eina_stringshare_add(buf);
              break;
@@ -366,7 +367,7 @@ _e_mod_event_del_handler(void *data, int type, void *event)
 
              if(config->eeh)
                 ecore_event_handler_del(config->eeh);
-             
+
              e_mod_run_ecomorph();
              config->cmd_retry++;
           }
