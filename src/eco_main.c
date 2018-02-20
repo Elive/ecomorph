@@ -354,7 +354,7 @@ _e_mod_event_del_handler(void *data, int type, void *event)
      {
         WRN("ECOMORPH DIED!");
 
-        if((config->exe_pid == eed->pid) && (config->cmd_sh_ended == EINA_TRUE))
+        if (config->exe_pid == eed->pid)
           {
           /*   if(config->cmd_retry >= 3) //FIXME: do this better
                {
