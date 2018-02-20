@@ -228,26 +228,18 @@ e_modapi_shutdown(E_Module *m)
 
    if(config->composite == 1)
      {
-        // make sure that we have a delay when unloading the module before to load the new compositor (ecomorph fully closed)
+        // make sure that ecomorph is fully unloaded before to load another compositor
         while (system("pidof ecomorph 1>/dev/null"))
            usleep(100000);
 
         config_module_load_set(COMPOSITE);
      }
 
-   /* Update desktop */
-   /*E_Container *con = e_container_current_get(e_manager_current_get());*/
-   /*E_Zone *zone;*/
-   /*E_Desk *desk;*/
-   /*zone = e_zone_current_get(con);*/
-   /*desk = e_desk_current_get(zone);*/
-
-   /*e_desk_next(zone);*/
-   /*zone = e_zone_current_get(con);*/
-   // this not works:
-   /*e_desk_prev(zone);*/
-   // desktop needs to be switched back after the module has been unloaded: XXX note: doesn't works, it continues running in a loop
-   /*ecore_timer_add(0.7, e_desk_prev, zone);*/
+   /* Update desktop: needed to not have an empty state desktop */
+   E_Action *a;
+   a = e_action_find("restart");
+   if ((a) && (a->func.go))
+      ecore_timer_add(0.2, a->func.go, NULL);
 
    E_FREE(config);
    config = NULL;
