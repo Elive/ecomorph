@@ -143,6 +143,9 @@ e_modapi_init(E_Module *m)
 
    if(!config) _config_new();
 
+   // save, because sometimes crash and we need the conf
+   e_config_save_flush();
+
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
@@ -234,6 +237,9 @@ e_modapi_shutdown(E_Module *m)
 
         config_module_load_set(COMPOSITE);
      }
+
+   // save before to restart
+   e_config_save();
 
    /* Update desktop: needed to not have an empty state desktop */
    E_Action *a;
