@@ -220,6 +220,10 @@ e_modapi_shutdown(E_Module *m)
    e_config->desk_flip_animate_mode = 1;
    /*e_config->desklock_on_suspend = 1;*/
 
+   // make sure that ecomorph is fully unloaded before to load another compositor
+   while (system("pidof ecomorph 1>/dev/null"))
+      usleep(30000);
+
    if(config->dropshadow == 1)
      config_module_load_set(DROPSHADOW);
 
@@ -227,20 +231,14 @@ e_modapi_shutdown(E_Module *m)
      config_module_load_set(COMPSCALE);
 
    // update: no need to check for composite, we ALWAYS want composite (user should have it in software mode if no acceleration, so...)
-   /*if(config->composite == 1)*/
-     /*{*/
-        // make sure that ecomorph is fully unloaded before to load another compositor
-        while (system("pidof ecomorph 1>/dev/null"))
-           usleep(100000);
-
-        config_module_load_set(COMPOSITE);
-     /*}*/
+   if(config_module_enable_get(COMPOSITE) == FALSE)
+      config_module_load_set(COMPOSITE);
 
    /* Update desktop: needed to not have an empty state desktop */
    E_Action *a;
    a = e_action_find("restart");
    if ((a) && (a->func.go))
-      ecore_timer_add(0.2, a->func.go, NULL);
+      ecore_timer_add(0.5, a->func.go, NULL);
 
    E_FREE(config);
    config = NULL;
