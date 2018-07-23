@@ -143,9 +143,6 @@ e_modapi_init(E_Module *m)
 
    if(!config) _config_new();
 
-   // save, because sometimes crash and we need the conf
-   e_config_save_flush();
-
    if(config_module_enable_get(DROPSHADOW) == TRUE)
      config_module_unload_set(DROPSHADOW);
 
@@ -229,17 +226,15 @@ e_modapi_shutdown(E_Module *m)
    if(config->compscale == 1)
      config_module_load_set(COMPSCALE);
 
-   if(config->composite == 1)
-     {
+   // update: no need to check for composite, we ALWAYS want composite (user should have it in software mode if no acceleration, so...)
+   /*if(config->composite == 1)*/
+     /*{*/
         // make sure that ecomorph is fully unloaded before to load another compositor
         while (system("pidof ecomorph 1>/dev/null"))
            usleep(100000);
 
         config_module_load_set(COMPOSITE);
-     }
-
-   // save before to restart
-   e_config_save();
+     /*}*/
 
    /* Update desktop: needed to not have an empty state desktop */
    E_Action *a;
