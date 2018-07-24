@@ -225,16 +225,16 @@ e_modapi_shutdown(E_Module *m)
       usleep(30000);
 
    if(config->dropshadow == 1)
-      ecore_exe_run("sleep 4 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load dropshadow ; enlightenment_remote -module-enable dropshadow ; fi", NULL);
+      ecore_exe_run("sleep 5 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load dropshadow ; enlightenment_remote -module-enable dropshadow ; fi", NULL);
       /*config_module_load_set(DROPSHADOW);*/
 
    if(config->compscale == 1)
-      ecore_exe_run("sleep 4 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load scale ; enlightenment_remote -module-enable scale ; fi", NULL);
+      ecore_exe_run("sleep 6 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load scale ; enlightenment_remote -module-enable scale ; fi", NULL);
       /*config_module_load_set(COMPSCALE);*/
 
    // update: no need to check for composite, we ALWAYS want composite (user should have it in software mode if no acceleration, so...)
    /* Update desktop: needed to not have an empty state desktop */
-   ecore_exe_run("sleep 5 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load comp ; enlightenment_remote -module-enable comp ; fi", NULL);
+   ecore_exe_run("sleep 7 ; if enlightenment_remote -module-list | grep -qsi 'ecomorph.*enabled' ; then true ; else enlightenment_remote -module-load comp ; enlightenment_remote -module-enable comp ; fi", NULL);
    /*if(config_module_enable_get(COMPOSITE) == FALSE)*/
       /*config_module_load_set(COMPOSITE);*/
 
