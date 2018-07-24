@@ -225,20 +225,23 @@ e_modapi_shutdown(E_Module *m)
       usleep(30000);
 
    if(config->dropshadow == 1)
-     config_module_load_set(DROPSHADOW);
+      ecore_exe_run("sleep 3 ; enlightenment_remote -module-load dropshadow ; enlightenment_remote -module-enable dropshadow", NULL);
+      /*config_module_load_set(DROPSHADOW);*/
 
    if(config->compscale == 1)
-     config_module_load_set(COMPSCALE);
+      ecore_exe_run("sleep 3 ; enlightenment_remote -module-load scale ; enlightenment_remote -module-enable scale", NULL);
+      /*config_module_load_set(COMPSCALE);*/
 
    // update: no need to check for composite, we ALWAYS want composite (user should have it in software mode if no acceleration, so...)
-   if(config_module_enable_get(COMPOSITE) == FALSE)
-      config_module_load_set(COMPOSITE);
-
    /* Update desktop: needed to not have an empty state desktop */
+   ecore_exe_run("sleep 4 ; enlightenment_remote -module-load comp ; enlightenment_remote -module-enable comp", NULL);
+   /*if(config_module_enable_get(COMPOSITE) == FALSE)*/
+      /*config_module_load_set(COMPOSITE);*/
+
    E_Action *a;
    a = e_action_find("restart");
    if ((a) && (a->func.go))
-      ecore_timer_add(0.5, a->func.go, NULL);
+      ecore_timer_add(0.2, a->func.go, NULL);
 
    E_FREE(config);
    config = NULL;
